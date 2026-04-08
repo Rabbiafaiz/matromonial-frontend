@@ -36,11 +36,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(user);
   };
   const loginInternal = (newToken: string, userData: any) => {
-    Cookies.set("token", newToken, { expires: 7 });
+    Cookies.set("token", newToken, { expires: 30 });
     localStorage.setItem("user", JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
-    router.push("/home");
+    router.push("/dashbaord");
   };
 
   const logoutInternal = () => {

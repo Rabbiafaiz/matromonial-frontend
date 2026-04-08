@@ -61,7 +61,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/home/success-stories"
+                  href="/dashbaord/success-stories"
                   className="text-sm text-gray-300 hover:text-white"
                 >
                   Success Stories

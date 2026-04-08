@@ -47,7 +47,7 @@ const NewJoined = () => {
   const [suggestedUsers, setSuggestedUsers] = useState<UserData[]>([]);
   const [featuredUsers, setFeaturedUsers] = useState<UserData[]>([]);
   const [recentlyViewedUsers, setRecentlyViewedUsers] = useState<UserData[]>(
-    []
+    [],
   );
   const [showAllNewUsers, setShowAllNewUsers] = useState(false);
   const [showAllSuggestedUsers, setShowAllSuggestedUsers] = useState(false);
@@ -82,12 +82,12 @@ const NewJoined = () => {
 
           const withRecentViews = validUsers.filter(
             (user: UserData) =>
-              user.recentlyViewed && user.recentlyViewed.length > 0
+              user.recentlyViewed && user.recentlyViewed.length > 0,
           );
           setRecentlyViewedUsers(
             withRecentViews.length > 0
               ? withRecentViews
-              : validUsers.slice(2, 12)
+              : validUsers.slice(2, 12),
           );
 
           if (validUsers.length > 0) {
@@ -122,10 +122,12 @@ const NewJoined = () => {
         // For recently viewed, using users with recentlyViewed data
         const withRecentViews = validUsers.filter(
           (user: UserData) =>
-            user.recentlyViewed && user.recentlyViewed.length > 0
+            user.recentlyViewed && user.recentlyViewed.length > 0,
         );
         setRecentlyViewedUsers(
-          withRecentViews.length > 0 ? withRecentViews : validUsers.slice(2, 12)
+          withRecentViews.length > 0
+            ? withRecentViews
+            : validUsers.slice(2, 12),
         );
         if (validUsers.length > 0) {
           setFeaturedUsers(validUsers.slice(0, 4));
@@ -233,7 +235,7 @@ const NewJoined = () => {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {(showAllRecentlyViewed
               ? recentlyViewedUsers
               : recentlyViewedUsers.slice(0, 5)
@@ -257,7 +259,7 @@ const NewJoined = () => {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {(showAllSuggestedUsers
               ? suggestedUsers
               : suggestedUsers.slice(0, 5)
@@ -281,7 +283,7 @@ const NewJoined = () => {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {(showAllNewUsers ? newUsers : newUsers.slice(0, 5)).map((user) => (
               <ProfileCard key={user._id} {...formatUserForCard(user)} />
             ))}

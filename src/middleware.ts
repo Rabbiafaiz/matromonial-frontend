@@ -5,7 +5,7 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
 
   // Define protected routes
-  const protectedRoutes = ["/home", "/tell-us-more-about-yourself"];
+  const protectedRoutes = ["/dashbaord", "/tell-us-more-about-yourself"];
 
   // Redirect if not logged in
   // if (protectedRoutes.includes(req.nextUrl.pathname) && !token) {
@@ -30,5 +30,5 @@ export function middleware(req: NextRequest) {
 
 // Apply to specific routes
 export const config = {
-  matcher: ["/home", "/tell-us-more-about-yourself"],
+  matcher: ["/dashbaord", "/tell-us-more-about-yourself"],
 };

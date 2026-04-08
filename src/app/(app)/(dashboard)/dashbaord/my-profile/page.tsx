@@ -127,7 +127,7 @@ const ProfilePage = () => {
     <div className="max-w-7xl mx-auto py-6 px-4">
       <ul className="hidden sm:flex items-center gap-2 text-sm my-8">
         <li>
-          <Link href="/home" className="hover:text-primary">
+          <Link href="/dashbaord" className="hover:text-primary">
             Home
           </Link>
         </li>

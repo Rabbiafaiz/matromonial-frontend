@@ -13,6 +13,7 @@ import {
 } from "../allImages/AllImages";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { generateRoomId } from "@/util/util";
 
 type ProfileCardProps = {
   id: string;
@@ -49,7 +50,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   return (
     <div
       className="bg-white shadow rounded-xl relative"
-      onClick={() => router.push(`/home/profile-details/${id}`)}
+      onClick={() => router.push(`/dashbaord/profile-details/${id}`)}
     >
       <img
         src={
@@ -58,8 +59,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
               ? image // Use the string directly
               : image.src
             : gender === "male"
-            ? MalePlaceholder.src
-            : FemalePlaceholder.src
+              ? MalePlaceholder.src
+              : FemalePlaceholder.src
         }
         alt="Profile Picture"
         className="w-full h-40 object-cover rounded-t-lg"
@@ -92,7 +93,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           </div>
           <p className="text-sm text-normal flex items-center gap-1">
             <BriefcaseIcon />
-            {occupation}
+            {occupation?.length > 20
+              ? occupation.substring(0, 20) + "..."
+              : occupation}
           </p>
           <div className="flex justify-between items-center">
             <p className="text-sm text-normal flex items-center gap-1">
@@ -120,7 +123,26 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
                   className="rounded-full bg-orange-50 p-2 cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`/home/messages?receiverId=${id}`);
+                    localStorage.setItem(
+                      "chat_user",
+                      JSON.stringify({
+                        _id: id,
+                        name,
+                        message: "",
+                        time: new Date(),
+                        image:
+                          image
+                            ? typeof image === "string"
+                              ? image
+                              : image.src
+                            : gender === "male"
+                            ? MalePlaceholder.src
+                            : FemalePlaceholder.src,
+                        roomId: generateRoomId(id, user?._id),
+                        gender,
+                      })
+                    );
+                    router.push(`/dashbaord/messages?receiverId=${id}`);
                   }}
                 >
                   <MessageIcon width={14} height={14} />

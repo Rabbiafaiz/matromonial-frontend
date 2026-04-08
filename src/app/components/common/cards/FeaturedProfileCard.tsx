@@ -13,6 +13,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { StaticImageData } from "next/image";
+import { generateRoomId } from "@/util/util";
 
 type FeaturedProfileCardProps = {
   id: string;
@@ -49,7 +50,7 @@ const FeaturedProfileCard: React.FC<FeaturedProfileCardProps> = ({
   return (
     <div
       className="relative rounded-2xl overflow-hidden w-full h-80"
-      onClick={() => router.push(`/home/profile-details/${id}`)}
+      onClick={() => router.push(`/dashbaord/profile-details/${id}`)}
     >
       {/* Background Image */}
       <img
@@ -132,7 +133,26 @@ const FeaturedProfileCard: React.FC<FeaturedProfileCardProps> = ({
                 className="rounded-full bg-white p-2.5 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  router.push(`/home/messages?receiverId=${id}`);
+                  localStorage.setItem(
+                    "chat_user",
+                    JSON.stringify({
+                      _id: id,
+                      name,
+                      message: "",
+                      time: new Date(),
+                      image:
+                        image
+                          ? typeof image === "string"
+                            ? image
+                            : image.src
+                          : gender === "male"
+                          ? MalePlaceholder.src
+                          : FemalePlaceholder.src,
+                      roomId: generateRoomId(id, user?._id),
+                      gender,
+                    })
+                  );
+                  router.push(`/dashbaord/messages?receiverId=${id}`);
                 }}
               >
                 <MessageIcon />

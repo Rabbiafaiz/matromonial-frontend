@@ -54,7 +54,7 @@ const SuccessStoriesPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ul className="flex items-center gap-2 text-sm my-8">
           <li>
-            <Link href="/home" className="hover:text-primary">
+            <Link href="/dashbaord" className="hover:text-primary">
               Home
             </Link>
           </li>
@@ -113,7 +113,7 @@ const SuccessStoriesPage = () => {
                         className="px-10 w-full sm:w-auto"
                         onClick={() =>
                           router.push(
-                            `/home/success-stories/${testimonial?._id}`
+                            `/dashbaord/success-stories/${testimonial?._id}`
                           )
                         }
                       />

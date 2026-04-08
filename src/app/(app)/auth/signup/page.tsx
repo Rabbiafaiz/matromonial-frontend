@@ -54,7 +54,7 @@ const SignupForm: React.FC = () => {
   //     if (response?.status === 200 || response?.status === 201) {
   //       showToast("Logged In successfully", "success");
   //       loginInternal(response?.data?.token, response?.data?.user);
-  //       router.push("/home");
+  //       router.push("/dashbaord");
   //     } else {
   //       showToast("Something went wrong. Please try again.", "error");
   //     }
@@ -117,7 +117,7 @@ const SignupForm: React.FC = () => {
         }
       }}
     >
-      {({ isSubmitting, errors, touched }) => (
+      {({ isSubmitting, errors, touched, setFieldValue, values }) => (
         <Form>
           <h2 className="text-3xl font-bold mb-7">Create new Account</h2>
           <Field
@@ -140,16 +140,28 @@ const SignupForm: React.FC = () => {
             error={errors.email}
             touched={touched.email}
           />
-          <Field
-            as={InputField}
-            label="Phone"
-            name="phone"
-            type="text"
-            placeholder="Phone"
-            className="mt-4"
-            error={errors.phone}
-            touched={touched.phone}
-          />
+          <Field name="phone">
+            {() => (
+              <InputField
+                label="Phone"
+                name="phone"
+                type="text"
+                placeholder="Phone"
+                className="mt-4"
+                value={values.phone}
+                maxLength={10}
+                inputMode="numeric"
+                onChange={(e) => {
+                  const onlyDigits = e.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
+                  setFieldValue("phone", onlyDigits);
+                }}
+                error={errors.phone}
+                touched={touched.phone}
+              />
+            )}
+          </Field>
           <Field
             as={InputField}
             label="Password"

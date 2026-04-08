@@ -23,7 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
-import { getformattedTime } from "@/util/util";
+import { generateRoomId, getformattedTime } from "@/util/util";
 
 const ProfileDetail = ({ params }: any) => {
   const id = params.profile_id;
@@ -91,7 +91,7 @@ const ProfileDetail = ({ params }: any) => {
     <div className="max-w-7xl mx-auto p-6">
       <ul className="flex items-center gap-2 text-sm my-8">
         <li>
-          <Link href="/home" className="hover:text-primary">
+          <Link href="/dashbaord" className="hover:text-primary">
             Home
           </Link>
         </li>
@@ -270,7 +270,7 @@ const ProfileDetail = ({ params }: any) => {
                 label="Chat Now"
                 onClick={() => {
                   if (user?.isPaid) {
-                    router.push(`/home/messages?receiverId=${id}`);
+                    router.push(`/dashbaord/messages?receiverId=${id}`);
                     localStorage.setItem(
                       "chat_user",
                       JSON.stringify({
@@ -285,7 +285,7 @@ const ProfileDetail = ({ params }: any) => {
                             : userDetails?.gender === "male"
                             ? MalePlaceholder.src
                             : FemalePlaceholder.src,
-                        roomId: `${userDetails?._id}_${user?._id}`,
+                        roomId: generateRoomId(userDetails?._id, user?._id),
                         gender: userDetails?.gender,
                       })
                     );

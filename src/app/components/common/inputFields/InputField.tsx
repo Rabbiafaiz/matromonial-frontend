@@ -13,6 +13,16 @@ type InputFieldProps = {
   classNameLabel?: string;
   icon?: ElementType;
   disabled?: boolean;
+  maxLength?: number;
+  inputMode?:
+    | "none"
+    | "text"
+    | "tel"
+    | "url"
+    | "email"
+    | "numeric"
+    | "decimal"
+    | "search";
   error?: string;
   touched?: boolean;
 };
@@ -28,6 +38,8 @@ const InputField: React.FC<InputFieldProps> = ({
   classNameLabel = "",
   icon: Icon,
   disabled = false,
+  maxLength,
+  inputMode,
   error,
   touched,
 }) => {
@@ -64,6 +76,8 @@ const InputField: React.FC<InputFieldProps> = ({
             onChange={onChange}
             placeholder={placeholder}
             disabled={disabled}
+            maxLength={maxLength}
+            inputMode={inputMode}
             className={`${Icon && "pl-10 "} px-3 py-2 border ${
               error && touched ? "border-red-500" : "border-gray"
             } rounded-xl h-12 focus:outline-none w-full pr-10`}

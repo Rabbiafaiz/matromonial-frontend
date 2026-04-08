@@ -52,7 +52,7 @@ const MessagePage: React.FC = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  let receiver_id = searchParams.get("receiverId");
+  const receiverId = searchParams.get("receiverId");
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -61,8 +61,12 @@ const MessagePage: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(
     chatObj || null
   );
+  const activeRoomId =
+    selectedChat?.roomId ||
+    (receiverId && user?._id ? generateRoomId(receiverId, user?._id) : null);
+
   const { messages, setMessages, sendMessage } = useChat(
-    selectedChat?.roomId ? selectedChat?.roomId : `${receiver_id}_${user?._id}`,
+    activeRoomId,
     user?._id
   );
   const senderImage =
@@ -80,8 +84,12 @@ const MessagePage: React.FC = () => {
   const fetchChats = async () => {
     try {
       const response = await getAllChats();
+      const apiChats = Array.isArray(response?.data?.chats)
+        ? response.data.chats
+        : [];
+
       setChats(
-        response?.data?.chats?.map((chat: any, i: number) => ({
+        apiChats.map((chat: any, i: number) => ({
           _id: chat?.chattedUser?._id,
           name: chat?.chattedUser?.name,
           message: "",
@@ -107,18 +115,38 @@ const MessagePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (chats && !selectedChat) {
+    if (receiverId && Array.isArray(chats) && chats.length > 0) {
+      const chatFromList = chats.find((chat) => chat._id === receiverId);
+      if (chatFromList) {
+        setSelectedChat(chatFromList);
+        return;
+      }
+    }
+
+    if (
+      receiverId &&
+      chatObj &&
+      chatObj?._id === receiverId &&
+      !selectedChat
+    ) {
+      setSelectedChat({
+        ...chatObj,
+        roomId:
+          chatObj?.roomId || generateRoomId(chatObj?._id, user?._id),
+      });
+      return;
+    }
+
+    if (!receiverId && chats.length > 0 && !selectedChat) {
       setSelectedChat(chats[0]);
     }
-  }, [chats]);
+  }, [receiverId, chats]);
 
   useEffect(() => {
-    if (!receiver_id && selectedChat) {
-      receiver_id = selectedChat?._id;
-      console.log(receiver_id);
-      router.replace(`/home/messages?receiverId=${receiver_id}`);
+    if (!receiverId && selectedChat?._id) {
+      router.replace(`/dashbaord/messages?receiverId=${selectedChat._id}`);
     }
-  }, [selectedChat]);
+  }, [receiverId, selectedChat]);
 
   useEffect(() => {
     if(!user?.isPaid){
@@ -150,10 +178,12 @@ const MessagePage: React.FC = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (inputMessage.trim() === "" || !selectedChat || !receiver_id) return;
+    const currentReceiverId = selectedChat?._id || receiverId;
+    if (inputMessage.trim() === "" || !selectedChat || !currentReceiverId)
+      return;
 
     try {
-      await sendMessage(inputMessage, receiver_id);
+      await sendMessage(inputMessage, currentReceiverId);
       fetchChats();
       // await axios.post("/api/sendMessage", {
       //   roomId: selectedChat.roomId,
@@ -231,7 +261,7 @@ const MessagePage: React.FC = () => {
     <div className="max-w-7xl mx-auto h-auto bg-gray-50 mb-20 md:px-4">
       <ul className="hidden md:flex items-center gap-2 text-sm my-8">
         <li>
-          <Link href="/home" className="hover:text-primary">
+          <Link href="/dashbaord" className="hover:text-primary">
             Home
           </Link>
         </li>
@@ -282,12 +312,7 @@ const MessagePage: React.FC = () => {
                       key={i}
                       onClick={() => {
                         setSelectedChat(chat);
-                        if (selectedChat) {
-                          receiver_id = selectedChat?._id;
-                          router.replace(
-                            `/home/messages?receiverId=${receiver_id}`
-                          );
-                        }
+                        router.replace(`/dashbaord/messages?receiverId=${chat._id}`);
                       }}
                       className="flex gap-3 items-center p-3 h-32 hover:bg-gray50 border-b border-gray cursor-pointer px-6"
                     >

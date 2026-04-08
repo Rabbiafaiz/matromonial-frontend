@@ -277,7 +277,7 @@ const TellUsMoreAboutYourself: React.FC = () => {
                       "user",
                       JSON.stringify(response?.data?.user)
                     );
-                    router.push("/home");
+                    router.push("/dashbaord");
                   } else {
                     showToast(
                       "Something went wrong. Please try again.",

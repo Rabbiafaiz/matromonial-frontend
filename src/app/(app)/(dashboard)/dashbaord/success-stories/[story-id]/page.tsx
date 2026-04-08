@@ -10,14 +10,14 @@ const SuccessStoryDetail = () => {
       <nav className="my-8">
         <ul className="flex items-center gap-2 text-sm">
           <li>
-            <Link href="/home" className="hover:text-primary">
+            <Link href="/dashbaord" className="hover:text-primary">
               Home
             </Link>
           </li>
           <li className="text-gray-400"><span>›</span></li>
           <li>
             <Link
-              href="/home/success-stories"
+              href="/dashbaord/success-stories"
               className="hover:text-primary"
             >
               Success Stories

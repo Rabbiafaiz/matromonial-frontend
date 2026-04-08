@@ -64,7 +64,7 @@ const LoginPage: React.FC = () => {
       if (response?.status === 200 || response?.status === 201) {
         loginInternal(response?.data?.token, response?.data?.user);
         showToast("Logged In successfully", "success");
-        router.push("/home");
+        router.push("/dashbaord");
       } else if (response?.status === 401) {
         showToast("Email not found, Please signup first!", "error");
         logoutInternal();
@@ -112,7 +112,7 @@ const LoginPage: React.FC = () => {
             loginInternal(response?.data?.token, response?.data?.user);
 
             showToast("Logged In successfully", "success");
-            if (response?.data?.user?.profileCompleted) router.push("/home");
+            if (response?.data?.user?.profileCompleted) router.push("/dashbaord");
             else router.push("/tell-us-more-about-yourself");
           } else if (response?.data?.message) {
             showToast(response?.data?.message, "error");

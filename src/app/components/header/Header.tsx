@@ -137,9 +137,10 @@ const Header: React.FC = () => {
               </div>
             )}
             {[
-              { href: "/home", label: "Home" },
+              { href: "/", label: "Home" },
+              { href: "/dashbaord", label: "Dashboard" },
               { href: "/about", label: "About" },
-              { href: "/home/success-stories", label: "Success Stories" },
+              { href: "/dashbaord/success-stories", label: "Success Stories" },
               { href: "/membership-plans", label: "Pricing" },
               { href: "/contact", label: "Contact" },
             ].map((item, i) => (
@@ -188,7 +189,7 @@ const Header: React.FC = () => {
               <div>
                 <div
                   className="bg-gray50 rounded-full p-2 cursor-pointer"
-                  onClick={() => router.push("/home/messages")}
+                  onClick={() => router.push("/dashbaord/messages")}
                 >
                   <TablerMsgIcon />
                 </div>

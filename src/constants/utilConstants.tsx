@@ -1,6 +1,6 @@
-import Matches from "@/app/(app)/(dashboard)/home/components/Matches";
-import NearestMe from "@/app/(app)/(dashboard)/home/components/NearestMe";
-import NewJoined from "@/app/(app)/(dashboard)/home/components/NewJoined";
+import Matches from "@/app/(app)/(dashboard)/dashbaord/components/Matches";
+import NearestMe from "@/app/(app)/(dashboard)/dashbaord/components/NearestMe";
+import NewJoined from "@/app/(app)/(dashboard)/dashbaord/components/NewJoined";
 import {
   ActiveStatusIcon,
   ConnectionsIcon,
@@ -40,17 +40,17 @@ export const menuItems = [
   {
     icon: <ProfileIcon />,
     label: "Profile",
-    path: "/home/my-profile",
+    path: "/dashbaord/my-profile",
   },
   // {
   //   icon: <ActiveStatusIcon />,
   //   label: "Active Status",
-  //   path: "/home/active-status",
+  //   path: "/dashbaord/active-status",
   // },
   // {
   //   icon: <ConnectionsIcon />,
   //   label: "Connections",
-  //   path: "/home/connections",
+  //   path: "/dashbaord/connections",
   // },
   {
     icon: <MembershipPlansIcon />,
@@ -60,7 +60,7 @@ export const menuItems = [
   {
     icon: <SuccessStoriesIcon />,
     label: "Success Stories",
-    path: "/home/success-stories",
+    path: "/dashbaord/success-stories",
   },
   {
     icon: <PrivacyPolicyIcon />,

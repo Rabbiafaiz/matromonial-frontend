@@ -40,7 +40,7 @@ interface ProfileCardProps {
 
 const NearestMe = () => {
   const [recentlyViewedUsers, setRecentlyViewedUsers] = useState<UserData[]>(
-    []
+    [],
   );
   const [suggestedUsers, setSuggestedUsers] = useState<UserData[]>([]);
   const [featuredUsers, setFeaturedUsers] = useState<UserData[]>([]);
@@ -71,7 +71,7 @@ const NearestMe = () => {
 
         if (data?.matchedUsers && Array.isArray(data?.matchedUsers)) {
           const validUsers = data?.matchedUsers.filter(
-            (user: UserData) => true
+            (user: UserData) => true,
           );
 
           setRecentlyViewedUsers(validUsers.slice(0, 10));
@@ -192,7 +192,7 @@ const NearestMe = () => {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {(showAllRecentlyViewed
               ? recentlyViewedUsers
               : recentlyViewedUsers.slice(0, 5)
@@ -216,7 +216,7 @@ const NearestMe = () => {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {(showAllSuggestedUsers
               ? suggestedUsers
               : suggestedUsers.slice(0, 5)
@@ -240,8 +240,11 @@ const NearestMe = () => {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
-            {(showAllNewUsers ? recommendedUsers : recommendedUsers.slice(0, 5)).map((user) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+            {(showAllNewUsers
+              ? recommendedUsers
+              : recommendedUsers.slice(0, 5)
+            ).map((user) => (
               <ProfileCard key={user._id} {...formatUserForCard(user)} />
             ))}
           </div>
