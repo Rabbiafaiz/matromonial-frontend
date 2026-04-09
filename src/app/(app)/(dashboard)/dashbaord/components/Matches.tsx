@@ -3,8 +3,6 @@ import FeaturedProfileCard from "@/app/components/common/cards/FeaturedProfileCa
 import ProfileCard from "@/app/components/common/cards/ProfileCard";
 import { showToast } from "@/app/components/ui/CustomToast";
 import { getMatchUsers, sendInterest } from "@/app/lib/api/homeRoutes";
-import { profiles } from "@/constants/dummyConstants";
-import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import Slider from "react-slick";
 
@@ -40,11 +38,21 @@ interface ProfileCardProps {
   image?: string;
   handleInterestSend: (id: string) => void;
 }
+
+interface PaginationData {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+const MATCH_USERS_LIMIT = 20;
+
 const Matches = () => {
   const [newUsers, setNewUsers] = useState<UserData[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<UserData[]>([]);
   const [recentlyViewedUsers, setRecentlyViewedUsers] = useState<UserData[]>(
-    []
+    [],
   );
   const [showAllNewUsers, setShowAllNewUsers] = useState(false);
   const [showAllSuggestedUsers, setShowAllSuggestedUsers] = useState(false);
@@ -52,6 +60,13 @@ const Matches = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [featuredUsers, setFeaturedUsers] = useState<UserData[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationData>({
+    page: 1,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
   const sliderRef = useRef<Slider | null>(null);
   const slickSettings = {
     dots: false,
@@ -64,36 +79,38 @@ const Matches = () => {
     beforeChange: (current: number, next: number) => setActiveSlide(next),
   };
 
-  const getMatchUsersList = async () => {
+  const updateUsersState = (users: UserData[]) => {
+    setNewUsers(users.slice(0, 10));
+    setSuggestedUsers(users.slice(5, 15));
+
+    const withRecentViews = users.filter(
+      (user: UserData) => user.recentlyViewed && user.recentlyViewed.length > 0,
+    );
+    setRecentlyViewedUsers(
+      withRecentViews.length > 0 ? withRecentViews : users.slice(2, 12),
+    );
+    setFeaturedUsers(users.slice(0, 4));
+  };
+
+  const getMatchUsersList = async (page = 1) => {
     try {
       setLoading(true);
-      const { data } = await getMatchUsers("match");
+      const { data } = await getMatchUsers("match", page, MATCH_USERS_LIMIT);
 
-      // Assuming response is the array of user objects
       if (data?.matchedUsers && Array.isArray(data?.matchedUsers)) {
-        // Filter users with complete profiles and images
         const validUsers = data?.matchedUsers.filter(
-          (user: UserData) =>
-            user.gender === "female" &&
-            user.userImages &&
-            user.userImages.length > 0
+          (user: UserData) => user.userImages && user.userImages.length > 0,
         );
 
-        // Set users for different sections
-        setNewUsers(validUsers.slice(0, 10)); // First 10 users for New Joined
-
-        // For suggested users, using a different slice of the same data
-        setSuggestedUsers(validUsers.slice(5, 15));
-
-        // For recently viewed, using users with recentlyViewed data
-        const withRecentViews = validUsers.filter(
-          (user: UserData) =>
-            user.recentlyViewed && user.recentlyViewed.length > 0
-        );
-        setRecentlyViewedUsers(
-          withRecentViews.length > 0 ? withRecentViews : validUsers.slice(2, 12)
-        );
+        updateUsersState(validUsers);
       }
+
+      setPagination({
+        page: data?.pagination?.page || page,
+        totalPages: data?.pagination?.totalPages || 1,
+        hasNextPage: Boolean(data?.pagination?.hasNextPage),
+        hasPreviousPage: Boolean(data?.pagination?.hasPreviousPage),
+      });
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
@@ -102,32 +119,15 @@ const Matches = () => {
   };
 
   useEffect(() => {
-    getMatchUsersList();
-  }, []);
+    getMatchUsersList(currentPage);
+  }, [currentPage]);
+
   const handleInterestSend = async (receiverId: string) => {
     const { status } = await sendInterest({ receiverId });
     if (status === 200) {
       showToast("Interest Sent Successfully", "success");
       try {
-        const { data } = await getMatchUsers("match");
-
-        if (data?.newUsers && Array.isArray(data?.newUsers)) {
-          const validUsers = data?.newUsers.filter((user: UserData) => true);
-
-          setNewUsers(validUsers.slice(0, 10));
-
-          setSuggestedUsers(validUsers.slice(5, 15));
-
-          const withRecentViews = validUsers.filter(
-            (user: UserData) =>
-              user.recentlyViewed && user.recentlyViewed.length > 0
-          );
-          setRecentlyViewedUsers(
-            withRecentViews.length > 0
-              ? withRecentViews
-              : validUsers.slice(2, 12)
-          );
-        }
+        await getMatchUsersList(currentPage);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -282,9 +282,34 @@ const Matches = () => {
             {(showAllNewUsers ? newUsers : newUsers.slice(0, 5)).map(
               (profile, index) => (
                 <ProfileCard key={index} {...formatUserForCard(profile)} />
-              )
+              ),
             )}
           </div>
+        </section>
+      )}
+      {pagination.totalPages > 1 && (
+        <section className="mt-6 flex items-center justify-end gap-3">
+          <button
+            onClick={() =>
+              pagination.hasPreviousPage && setCurrentPage((prev) => prev - 1)
+            }
+            disabled={!pagination.hasPreviousPage}
+            className="px-3 py-2 border rounded-md disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <button
+            onClick={() =>
+              pagination.hasNextPage && setCurrentPage((prev) => prev + 1)
+            }
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-2 border rounded-md disabled:opacity-50"
+          >
+            Next
+          </button>
         </section>
       )}
     </main>
