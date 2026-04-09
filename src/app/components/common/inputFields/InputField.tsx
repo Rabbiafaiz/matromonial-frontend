@@ -25,6 +25,7 @@ type InputFieldProps = {
     | "search";
   error?: string;
   touched?: boolean;
+  prefix?: string;
 };
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -42,6 +43,7 @@ const InputField: React.FC<InputFieldProps> = ({
   inputMode,
   error,
   touched,
+  prefix,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   return (
@@ -78,10 +80,15 @@ const InputField: React.FC<InputFieldProps> = ({
             disabled={disabled}
             maxLength={maxLength}
             inputMode={inputMode}
-            className={`${Icon && "pl-10 "} px-3 py-2 border ${
+            className={`${Icon ? "pl-10 " : prefix ? "pl-12 " : "px-3 "} py-2 border ${
               error && touched ? "border-red-500" : "border-gray"
             } rounded-xl h-12 focus:outline-none w-full pr-10`}
           />
+        )}
+        {prefix && (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-darkBlue font-semibold pointer-events-none">
+            {prefix}
+          </div>
         )}
         {Icon && (
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2">

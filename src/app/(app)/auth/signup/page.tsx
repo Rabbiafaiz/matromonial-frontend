@@ -78,7 +78,7 @@ const SignupForm: React.FC = () => {
       .required("Email is required"),
     phone: Yup.string()
       .required("Phone number is required")
-      .matches(/^[6-9]\d{9}$/, "Invalid Indian phone number"),
+      .matches(/^[5-9]\d{9}$/, "Invalid Indian phone number"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
@@ -100,6 +100,7 @@ const SignupForm: React.FC = () => {
         try {
           const response = await register({
             ...values,
+            phone: `+91${values.phone}`,
             ...(fcmToken && { fcmToken: fcmToken }),
           });
           if (response?.status === 200 || response?.status === 201) {
@@ -147,6 +148,7 @@ const SignupForm: React.FC = () => {
                 name="phone"
                 type="text"
                 placeholder="Phone"
+                prefix="+91"
                 className="mt-4"
                 value={values.phone}
                 maxLength={10}
