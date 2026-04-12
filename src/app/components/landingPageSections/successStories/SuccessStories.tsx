@@ -74,7 +74,7 @@ const SuccessStories = () => {
           {successStoriesList && successStoriesList.length > 0 ? (
             <Slider {...settings}>
               {successStoriesList.map((testimonial, index) => (
-                <div key={index} className="flex justify-center w-full px-2">
+                <div key={index} className="flex justify-center w-full px-2 mb-2">
                   <div className="bg-primary custom-rounded text-left flex justify-between">
                     <div className="lg:py-20 py-8 px-4 lg:px-12 relative">
                       <div>
