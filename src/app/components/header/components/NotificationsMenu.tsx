@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   FemalePlaceholder,
@@ -32,6 +32,16 @@ const NotificationsMenu = ({
     }
   }, [isOpen]);
 
+  const sortedNotifications = useMemo(() => {
+    if (!Array.isArray(notification)) return [];
+
+    return [...notification].sort((a, b) => {
+      const dateA = new Date(a?.updatedAt || a?.createdAt).getTime();
+      const dateB = new Date(b?.updatedAt || b?.createdAt).getTime();
+      return dateB - dateA;
+    });
+  }, [notification]);
+
   return (
     <div
       className={`sm:absolute sm:top-auto top-0 fixed right-0 sm:mt-2 w-full h-screen sm:w-96 bg-white sm:rounded-2xl sm:h-auto border border-gray z-50 transform transition-all duration-300 ease-in-out ${
@@ -60,10 +70,8 @@ const NotificationsMenu = ({
       <div className="sm:max-h-[400px] overflow-y-auto">
         <div className="p-2">
           <div className="text-sm text-gray-500 px-2 py-1">Today</div>
-          {notification &&
-            Array.isArray(notification) &&
-            notification.length > 0 ?
-            notification.map((noti, index) => (
+          {sortedNotifications.length > 0 ?
+            sortedNotifications.map((noti, index) => (
               <div
                 key={noti._id}
                 className="flex items-start p-3 hover:bg-gray-50 cursor-pointer rounded-lg transition-all duration-200 ease-in-out transform hover:scale-[1.02]"
@@ -92,7 +100,7 @@ const NotificationsMenu = ({
                   <p className="text-sm text-gray-600 mt-1">{noti?.message}</p>
                 </div>
               </div>
-            )).reverse() : (
+            )) : (
               <div className="flex justify-center my-32">
                 <h6>No Notifications</h6>
               </div>
