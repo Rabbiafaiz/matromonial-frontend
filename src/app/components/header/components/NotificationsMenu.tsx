@@ -5,19 +5,9 @@ import {
   FemalePlaceholder,
   MalePlaceholder,
 } from "../../common/allImages/AllImages";
-import Image from "next/image";
 import { getNotificationsList } from "@/app/lib/api/homeRoutes";
 import ProfileImage from "../../common/profileImage/ProfileImage";
 import { getformattedTime } from "@/util/util";
-
-interface Notification {
-  id: number;
-  type: "profile_view" | "new_match" | "compatibility" | "message";
-  title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-}
 
 const NotificationsMenu = ({
   isOpen,
@@ -27,43 +17,6 @@ const NotificationsMenu = ({
   onClose: () => void;
 }) => {
   const [notification, setNotifications] = useState<any[]>([]);
-  const notifications: Notification[] = [
-    {
-      id: 1,
-      type: "profile_view",
-      title: "Profile View",
-      message: "Your profile was viewed! Someone may want to connect.",
-      time: "2h ago",
-      isRead: true,
-    },
-    {
-      id: 2,
-      type: "new_match",
-      title: "New Match Alert",
-      message:
-        "Someone new has matched with you! Check your profile for a potential match.",
-      time: "8h ago",
-      isRead: false,
-    },
-    {
-      id: 3,
-      type: "compatibility",
-      title: "Compatibility Update",
-      message:
-        "A new compatible match has been found based on your preferences. Take a look!",
-      time: "1d ago",
-      isRead: true,
-    },
-    {
-      id: 4,
-      type: "message",
-      title: "Message Received",
-      message:
-        "You've got new messages from John! Start a conversation with your match.",
-      time: "2d ago",
-      isRead: false,
-    },
-  ];
 
   const getNotification = async () => {
     try {
@@ -109,7 +62,7 @@ const NotificationsMenu = ({
           <div className="text-sm text-gray-500 px-2 py-1">Today</div>
           {notification &&
             Array.isArray(notification) &&
-            notification.length < 0 ?
+            notification.length > 0 ?
             notification.map((noti, index) => (
               <div
                 key={noti._id}

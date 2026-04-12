@@ -1,13 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import axios from "axios";
 import {
-  AboutImg2,
   ArrowLeft,
   ClockIcon,
-  DummyProfile,
   FemalePlaceholder,
   MalePlaceholder,
   PaperPlane,
@@ -20,7 +16,6 @@ import InputField from "@/app/components/common/inputFields/InputField";
 import Link from "next/link";
 import ProfileImage from "@/app/components/common/profileImage/ProfileImage";
 import {
-  createChat,
   getAllChats,
   getMessages,
 } from "@/app/lib/api/messagingRoutes";
@@ -29,14 +24,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { generateRoomId, getformattedTime } from "@/util/util";
 import CustomLoader from "@/app/components/common/loader/CustomLoader";
 import { showToast } from "@/app/components/ui/CustomToast";
-
-interface ChatMessage {
-  _id: string;
-  authorId: string;
-  authorName: string;
-  receiverId: string;
-  text: string;
-}
 
 interface Chat {
   _id: string;
@@ -61,12 +48,16 @@ const MessagePage: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(
     chatObj || null
   );
+  const [isSubscriptionBlocked, setIsSubscriptionBlocked] = useState(false);
+  const [subscriptionMessage, setSubscriptionMessage] = useState(
+    "You have messages waiting. Please subscribe to view them."
+  );
   const activeRoomId =
     selectedChat?.roomId ||
     (receiverId && user?._id ? generateRoomId(receiverId, user?._id) : null);
 
   const { messages, setMessages, sendMessage } = useChat(
-    activeRoomId,
+    isSubscriptionBlocked ? null : activeRoomId,
     user?._id
   );
   const senderImage =
@@ -84,6 +75,18 @@ const MessagePage: React.FC = () => {
   const fetchChats = async () => {
     try {
       const response = await getAllChats();
+      if (response?.data?.subscriptionRequired) {
+        setIsSubscriptionBlocked(true);
+        setSubscriptionMessage(
+          response?.data?.message ||
+            "You have messages waiting. Please subscribe to view them."
+        );
+        setChats([]);
+        setSelectedChat(null);
+        setMessages([]);
+        return;
+      }
+      setIsSubscriptionBlocked(false);
       const apiChats = Array.isArray(response?.data?.chats)
         ? response.data.chats
         : [];
@@ -149,18 +152,29 @@ const MessagePage: React.FC = () => {
   }, [receiverId, selectedChat]);
 
   useEffect(() => {
-    if(!user?.isPaid){
-      showToast("Please subscribe a plan to access this page", "error")
-      router.push("/membership-plans")
+    if (!user?.isPaid) {
+      setIsSubscriptionBlocked(true);
+      setSubscriptionMessage(
+        "You have messages waiting. Please subscribe to view them."
+      );
     }
-  }, [])
+  }, [user?.isPaid]);
 
   useEffect(() => {
-    if (selectedChat) {
+    if (selectedChat && !isSubscriptionBlocked) {
       const fetchMessages = async () => {
         try {
           setMessagesLoading(true);
           const response = await getMessages(selectedChat?.roomId);
+          if (response?.data?.subscriptionRequired) {
+            setIsSubscriptionBlocked(true);
+            setSubscriptionMessage(
+              response?.data?.message ||
+                "You have messages waiting. Please subscribe to view message content."
+            );
+            setMessages([]);
+            return;
+          }
           setMessages(response.data.messages);
         } catch (error) {
           console.error("Error fetching messages:", error);
@@ -170,7 +184,7 @@ const MessagePage: React.FC = () => {
       };
       fetchMessages();
     }
-  }, [selectedChat]);
+  }, [selectedChat, isSubscriptionBlocked]);
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
@@ -178,6 +192,10 @@ const MessagePage: React.FC = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
+    if (isSubscriptionBlocked) {
+      showToast("Please subscribe to use chat messaging.", "error");
+      return;
+    }
     const currentReceiverId = selectedChat?._id || receiverId;
     if (inputMessage.trim() === "" || !selectedChat || !currentReceiverId)
       return;
@@ -305,7 +323,23 @@ const MessagePage: React.FC = () => {
             </div>
             <div className="flex-1 overflow-y-auto">
               <div>
-                {chats &&
+                {isSubscriptionBlocked ? (
+                  <div className="flex flex-col gap-4 items-center justify-center text-center p-8 h-[300px]">
+                    <h3 className="text-lg font-semibold text-darkBlue">
+                      Subscription Required
+                    </h3>
+                    <p className="text-sm text-gray-600 max-w-sm">
+                      {subscriptionMessage}
+                    </p>
+                    <button
+                      onClick={() => router.push("/membership-plans")}
+                      className="bg-primary text-white px-5 py-2 rounded-lg"
+                    >
+                      View Plans
+                    </button>
+                  </div>
+                ) : (
+                  chats &&
                   chats.length > 0 &&
                   chats.map((chat, i) => (
                     <div
@@ -337,7 +371,8 @@ const MessagePage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -370,7 +405,16 @@ const MessagePage: React.FC = () => {
               className="flex-1 p-6 overflow-y-auto space-y-4"
               ref={messagesEndRef}
             >
-              {messagesLoading ? (
+              {isSubscriptionBlocked ? (
+                <div className="w-full h-full flex flex-col justify-center items-center gap-3 text-center">
+                  <h3 className="text-lg font-semibold text-darkBlue">
+                    Subscription Required
+                  </h3>
+                  <p className="text-sm text-gray-600 max-w-md">
+                    {subscriptionMessage}
+                  </p>
+                </div>
+              ) : messagesLoading ? (
                 <div className="w-full h-full flex justify-center items-end">
                   <CustomLoader />
                 </div>
@@ -415,7 +459,7 @@ const MessagePage: React.FC = () => {
             </div>
 
             <div className="p-4 border-t border-gray">
-              {showEmojiPicker && (
+              {!isSubscriptionBlocked && showEmojiPicker && (
                 <div
                   ref={emojiPickerRef}
                   className="absolute top-28 right-4"
@@ -426,20 +470,27 @@ const MessagePage: React.FC = () => {
               <div className="flex items-center bg-gray50 rounded-lg p-1">
                 <input
                   type="text"
-                  placeholder="Type something..."
+                  placeholder={
+                    isSubscriptionBlocked
+                      ? "Subscribe to view and send messages"
+                      : "Type something..."
+                  }
                   className="flex-1 px-4 py-2 bg-transparent border-0 outline-none"
                   value={inputMessage}
+                  disabled={isSubscriptionBlocked}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                 />
                 <div className="flex items-center gap-2 px-2">
                   <button
+                    disabled={isSubscriptionBlocked}
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                     className="p-2 hover:bg-gray-200 border-r border-gray"
                   >
                     <SmileIcon width={20} height={20} />
                   </button>
                   <button
+                    disabled={isSubscriptionBlocked}
                     onClick={handleSendMessage}
                     className="bg-darkBlue p-2 rounded-full"
                   >
