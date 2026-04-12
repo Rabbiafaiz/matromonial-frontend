@@ -46,6 +46,7 @@ const PricingPlans: React.FC = () => {
   const [filteredPlans, setFilteredPlans] = useState<Plan[]>([]);
   const [isUpgrade, setIsUpgrade] = useState<boolean>(false);
   const [isAnual, setIsAnual] = useState<boolean>(false);
+  const currentMembershipId = user?.membership ?? user?.member;
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -208,41 +209,48 @@ const PricingPlans: React.FC = () => {
         </div>
 
         <div className="flex lg:flex-nowrap flex-wrap justify-center mt-12">
-          {filteredPlans.length > 0 ? filteredPlans.map((plan, index) => (
-            <div
-              key={index}
-              className={`${plan.bgColor} rounded-2xl text-left border border-gray w-full sm:w-1/3 md:mx-4 mx-0 my-4 px-6 py-8 `}
-            >
-              <h3 className={`text-xl font-semibold ${plan.textColor}`}>
-                {plan.title}
-              </h3>
-              <p
-                className={`text-4xl font-bold mt-2 pb-8 border-b ${plan.borderColor}`}
+          {filteredPlans.length > 0 ? filteredPlans.map((plan, index) => {
+            const isCurrentPlan = currentMembershipId && plan.id === currentMembershipId;
+            const buttonLabel = isCurrentPlan ? "Current plan" : plan.buttonLabel;
+
+            return (
+              <div
+                key={index}
+                className={`${plan.bgColor} rounded-2xl text-left border border-gray w-full sm:w-1/3 md:mx-4 mx-0 my-4 px-6 py-8 `}
               >
-                <span className={`${plan.priceColor} me-2`}>₹{plan.price}</span>
-                <span className={`text-base font-light ${plan.textColor}`}>
-                  {plan.period}
-                </span>
-              </p>
-              <p className={`mt-8 ${plan.textColor}`}>{plan.description}</p>
-              <ul className="text-left mt-6 space-y-2">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className={`${plan.featureClr}`}>
-                    ✔ {feature}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className={`mt-8 w-full`}
-                label={plan.buttonLabel}
-                variant={plan.variant}
-                onClick={() => {
-                  localStorage.setItem("selected_plan", JSON.stringify(plan));
-                  router.push("/membership-plans/selected-plan");
-                }}
-              />
-            </div>
-          )) : (
+                <h3 className={`text-xl font-semibold ${plan.textColor}`}>
+                  {plan.title}
+                </h3>
+                <p
+                  className={`text-4xl font-bold mt-2 pb-8 border-b ${plan.borderColor}`}
+                >
+                  <span className={`${plan.priceColor} me-2`}>₹{plan.price}</span>
+                  <span className={`text-base font-light ${plan.textColor}`}>
+                    {plan.period}
+                  </span>
+                </p>
+                <p className={`mt-8 ${plan.textColor}`}>{plan.description}</p>
+                <ul className="text-left mt-6 space-y-2">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className={`${plan.featureClr}`}>
+                      ✔ {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className={`mt-8 w-full`}
+                  label={buttonLabel}
+                  variant={isCurrentPlan ? "secondary" : plan.variant}
+                  disabled={isCurrentPlan}
+                  onClick={() => {
+                    if (isCurrentPlan) return;
+                    localStorage.setItem("selected_plan", JSON.stringify(plan));
+                    router.push("/membership-plans/selected-plan");
+                  }}
+                />
+              </div>
+            );
+          }) : (
             <div>
               <span className="text-xl">No Plans found!</span>
             </div>
