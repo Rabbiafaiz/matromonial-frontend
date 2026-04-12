@@ -63,7 +63,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
               : FemalePlaceholder.src
         }
         alt="Profile Picture"
-        className="w-full h-40 object-cover rounded-t-lg"
+        className="w-full h-50 object-cover rounded-t-lg"
       />
       <div className="mt-1">
         <div className="flex items-center space-x-2">
