@@ -34,6 +34,14 @@ const LoginPage: React.FC = () => {
     password: "",
   };
 
+  const redirectAfterLogin = (target: string) => {
+    if (typeof window !== "undefined") {
+      window.location.replace(target);
+      return;
+    }
+    router.replace(target);
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("fcm_token");
@@ -64,7 +72,7 @@ const LoginPage: React.FC = () => {
       if (response?.status === 200 || response?.status === 201) {
         loginInternal(response?.data?.token, response?.data?.user);
         showToast("Logged In successfully", "success");
-        router.push("/dashbaord");
+        redirectAfterLogin("/dashbaord");
       } else if (response?.status === 401) {
         showToast("Email not found, Please signup first!", "error");
         logoutInternal();
@@ -112,8 +120,9 @@ const LoginPage: React.FC = () => {
             loginInternal(response?.data?.token, response?.data?.user);
 
             showToast("Logged In successfully", "success");
-            if (response?.data?.user?.profileCompleted) router.push("/dashbaord");
-            else router.push("/tell-us-more-about-yourself");
+            if (response?.data?.user?.profileCompleted)
+              redirectAfterLogin("/dashbaord");
+            else redirectAfterLogin("/tell-us-more-about-yourself");
           } else if (response?.data?.message) {
             showToast(response?.data?.message, "error");
           } else {

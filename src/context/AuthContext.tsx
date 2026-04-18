@@ -36,11 +36,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(user);
   };
   const loginInternal = (newToken: string, userData: any) => {
-    Cookies.set("token", newToken, { expires: 30 });
+    Cookies.set("token", newToken, {
+      expires: 30,
+      path: "/",
+      sameSite: "Lax",
+      secure: typeof window !== "undefined" ? window.location.protocol === "https:" : false,
+    });
     localStorage.setItem("user", JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
-    router.push("/dashbaord");
   };
 
   const logoutInternal = () => {

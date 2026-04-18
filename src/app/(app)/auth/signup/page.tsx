@@ -83,6 +83,14 @@ const SignupForm: React.FC = () => {
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
   });
+
+  const redirectAfterLogin = (target: string) => {
+    if (typeof window !== "undefined") {
+      window.location.replace(target);
+      return;
+    }
+    router.replace(target);
+  };
   // const handleGoogleLogin = async () => {
   //   try {
   //     setLoading(true);
@@ -106,7 +114,7 @@ const SignupForm: React.FC = () => {
           if (response?.status === 200 || response?.status === 201) {
             loginInternal(response?.data?.token, response?.data?.user);
             showToast("Signed up successfully", "success");
-            router.push("/tell-us-more-about-yourself");
+            redirectAfterLogin("/tell-us-more-about-yourself");
           } else if (response?.data?.message) {
             showToast(response?.data?.message, "error");
           } else {

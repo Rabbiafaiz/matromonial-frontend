@@ -42,8 +42,8 @@ const BreadcrumbMain = () => {
 };
 
 const SelectedPlans = () => {
-  const selectedPlan = localStorage.getItem("selected_plan");
-  const parsedObj = selectedPlan ? JSON.parse(selectedPlan) : null;
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [isPlanLoading, setIsPlanLoading] = useState<boolean>(true);
   const [cashfree, setCashfree] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -52,6 +52,30 @@ const SelectedPlans = () => {
     process.env.NEXT_PUBLIC_CASHFREE_MODE === "sandbox"
       ? "sandbox"
       : "production";
+
+  const parseStoredPlan = (value: string | null) => {
+    if (!value) return null;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return null;
+    }
+  };
+
+  const getPlanFeatures = (plan: any): string[] => {
+    if (!plan) return [];
+    if (Array.isArray(plan.features)) return plan.features;
+
+    const fallbackFeatures: string[] = [];
+    if (plan.duration) fallbackFeatures.push(`${plan.duration} Duration`);
+    if (plan.messages !== undefined)
+      fallbackFeatures.push(`${plan.messages} Messages`);
+    if (plan.liveChats !== undefined)
+      fallbackFeatures.push(`Live Chats: ${plan.liveChats}`);
+    if (plan.profileViews !== undefined)
+      fallbackFeatures.push(`${plan.profileViews} Profile Views`);
+    return fallbackFeatures;
+  };
 
   // Initialize Cashfree SDK
   useEffect(() => {
@@ -64,11 +88,35 @@ const SelectedPlans = () => {
     initializeSDK();
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const selectedPlanFromStorage = parseStoredPlan(
+      localStorage.getItem("selected_plan"),
+    );
+
+    // Fallback to current plan data if selected plan is unavailable
+    const currentPlanFromStorage = parseStoredPlan(
+      localStorage.getItem("currentPlan"),
+    );
+
+    setSelectedPlan(selectedPlanFromStorage || currentPlanFromStorage || null);
+    setIsPlanLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (isPlanLoading) return;
+    if (!selectedPlan) {
+      showToast("Please select a plan to continue", "error");
+      router.replace("/membership-plans");
+    }
+  }, [isPlanLoading, selectedPlan, router]);
+
   const checkPaymentStatus = async (orderId: string) => {
     try {
       const response = await verifyPayment({
         order_id: orderId,
-        membership: parsedObj?.id,
+        membership: selectedPlan?.id,
         userId: user?._id,
         payment_env: cashfreeMode,
       });
@@ -85,10 +133,16 @@ const SelectedPlans = () => {
   };
 
   const handlePayment = async () => {
+    if (!selectedPlan) {
+      showToast("Please select a plan first", "error");
+      router.push("/membership-plans");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await createPaymentCheckout({
-        amount: parsedObj?.price,
+        amount: selectedPlan?.price,
         customer_name: user?.name,
         customer_id: user?._id,
         customer_phone: user?.phone,
@@ -136,6 +190,10 @@ const SelectedPlans = () => {
     }
   };
 
+  if (isPlanLoading) {
+    return null;
+  }
+
   return (
     <section className="px-4 md:px-0 max-w-[90%] w-full sm:max-w-[707px] mx-auto my-6 sm:my-12">
       <BreadcrumbMain />
@@ -149,16 +207,16 @@ const SelectedPlans = () => {
           <div className="flex flex-wrap gap-x-8 sm:gap-x-16 md:gap-x-0 md:justify-between items-center gap-y-6 rounded-3xl sm:border-[0.5px] sm:border-gray p-4 mt-6">
             <div className="flex flex-col gap-y-4">
               <h3 className="text-[#777777] text-[16px] font-semibold">
-                {parsedObj?.title}
+                {selectedPlan?.title}
               </h3>
               <p className="text-[#434343] text-[32px] font-semibold leading-10">
-                ₹{parsedObj?.price}
+                ₹{selectedPlan?.price}
               </p>
             </div>
 
             {/* Plan Benefits */}
             <div className="flex flex-col gap-y-3">
-              {parsedObj?.features?.map((item: string, index: number) => (
+              {getPlanFeatures(selectedPlan).map((item: string, index: number) => (
                 <div key={index} className="flex gap-2 items-center">
                   <Tick />
                   <p className="text-[#777777] text-[14px] font-semibold leading-5">
@@ -195,9 +253,9 @@ const SelectedPlans = () => {
           </h3>
           <div className="flex flex-col gap-y-4 sm:gap-y-6 rounded-3xl sm:border-[0.5px] sm:border-gray p-5">
             {[
-              { label: "Total Product Prices", value: `₹${parsedObj?.price}` },
+              { label: "Total Product Prices", value: `₹${selectedPlan?.price}` },
               // { label: "Discount", value: "" },
-              { label: "Valid for", value: parsedObj?.description },
+              { label: "Valid for", value: selectedPlan?.description },
             ].map((item, index) => (
               <p
                 key={index}
@@ -211,7 +269,7 @@ const SelectedPlans = () => {
             <p className="flex justify-between items-center text-[#1C264E] font-semibold text-[20px] px-4">
               Total{" "}
               <span className="text-[#F97E27] font-semibold text-[20px]">
-                ₹{parsedObj?.price}
+                ₹{selectedPlan?.price}
               </span>
             </p>
 

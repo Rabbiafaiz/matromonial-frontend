@@ -34,6 +34,7 @@ const ProfileDetail = ({ params }: any) => {
   const [userDetails, setUserDetails] = useState<any>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
 
   const profileImages =
     userDetails?.userImages.length > 0
@@ -54,11 +55,11 @@ const ProfileDetail = ({ params }: any) => {
       </div>
     ),
   };
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isInterestLoading, setIsInterestLoading] = useState<boolean>(false);
 
   const handleInterestSend = async () => {
     try {
-      setLoading(true);
+      setIsInterestLoading(true);
       const { status } = await sendInterest({ receiverId: id });
       if (status === 200) {
         showToast("Interest Sent Successfully", "success");
@@ -67,7 +68,7 @@ const ProfileDetail = ({ params }: any) => {
       }
     } catch (error) {
     } finally {
-      setLoading(false);
+      setIsInterestLoading(false);
     }
   };
 
@@ -78,14 +79,68 @@ const ProfileDetail = ({ params }: any) => {
   useEffect(() => {
     const getUsersProfile = async () => {
       try {
+        setIsPageLoading(true);
         const response = await getUserDetails(id);
         setUserDetails(response?.data?.user);
       } catch (error) {}
+      finally {
+        setIsPageLoading(false);
+      }
     };
     getUsersProfile();
   }, [id]);
 
-  if (!userDetails) return <p>Loading...</p>;
+  if (isPageLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6 animate-pulse">
+        <div className="h-4 w-48 bg-gray-200 rounded mb-8" />
+        <div className="bg-white border border-gray rounded-2xl py-3 md:py-6 lg:py-10 grid grid-cols-1 lg:grid-cols-2">
+          <div className="space-y-4 border-r border-gray px-3 md:px-6 lg:px-10">
+            <div className="relative rounded-3xl overflow-hidden mb-10 shadow-md">
+              <div className="w-full h-96 bg-gray-200" />
+            </div>
+            <div className="h-6 w-48 bg-gray-200 rounded" />
+            <div className="h-4 w-full bg-gray-200 rounded" />
+            <div className="h-4 w-5/6 bg-gray-200 rounded" />
+            <div className="flex gap-2 mt-4">
+              <div className="h-10 w-40 bg-gray-200 rounded-lg" />
+              <div className="h-10 w-56 bg-gray-200 rounded-lg" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-2 md:gap-6 px-4 md:px-8">
+            <div className="border-b border-gray pb-4">
+              <div className="h-6 w-44 bg-gray-200 rounded mb-4" />
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
+                <div className="h-4 w-48 bg-gray-200 rounded" />
+                <div className="h-4 w-48 bg-gray-200 rounded" />
+              </div>
+            </div>
+            <div className="border-b border-gray pb-4">
+              <div className="h-6 w-48 bg-gray-200 rounded mb-4" />
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
+                <div className="h-4 w-40 bg-gray-200 rounded" />
+                <div className="h-4 w-40 bg-gray-200 rounded" />
+                <div className="h-4 w-40 bg-gray-200 rounded" />
+              </div>
+            </div>
+            <div className="border-b border-gray pb-4">
+              <div className="h-6 w-48 bg-gray-200 rounded mb-4" />
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
+                <div className="h-4 w-40 bg-gray-200 rounded" />
+                <div className="h-4 w-40 bg-gray-200 rounded" />
+                <div className="h-4 w-40 bg-gray-200 rounded" />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <div className="h-11 w-32 bg-gray-200 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userDetails) return null;
 
   return (
     <div className="max-w-7xl mx-auto p-6">

@@ -233,6 +233,11 @@ const MessagePage: React.FC = () => {
     setInputMessage((prev) => prev + emojiObject.emoji);
   };
 
+  const handleOpenProfileDetails = () => {
+    if (!selectedChat?._id) return;
+    router.push(`/dashbaord/profile-details/${selectedChat._id}`);
+  };
+
   // const handleCreateConvo = async (id: string) => {
   //   try {
   //     const response = await createChat({
@@ -384,19 +389,27 @@ const MessagePage: React.FC = () => {
           >
             <div className="p-4 border-b border-gray flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <ProfileImage
-                  src={
-                    selectedChat?.image
-                      ? selectedChat?.image
-                      : selectedChat?.gender === "female"
-                      ? FemalePlaceholder.src
-                      : MalePlaceholder.src
-                  }
-                  alt="My Image"
-                  size="md"
-                  active
-                />
-                <h2 className="text-lg font-bold">{selectedChat?.name}</h2>
+                <button
+                  type="button"
+                  onClick={handleOpenProfileDetails}
+                  className="flex items-center gap-3 text-left"
+                >
+                  <ProfileImage
+                    src={
+                      selectedChat?.image
+                        ? selectedChat?.image
+                        : selectedChat?.gender === "female"
+                        ? FemalePlaceholder.src
+                        : MalePlaceholder.src
+                    }
+                    alt="My Image"
+                    size="md"
+                    active
+                  />
+                  <h2 className="text-lg font-bold hover:text-primary cursor-pointer">
+                    {selectedChat?.name}
+                  </h2>
+                </button>
               </div>
               <button className="text-sm text-primary">Block</button>
             </div>

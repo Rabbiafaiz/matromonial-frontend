@@ -20,6 +20,7 @@ import NotificationsMenu from "./components/NotificationsMenu";
 import ProfileImage from "../common/profileImage/ProfileImage";
 import ProfileMenu from "./components/ProfileMenu";
 import { useAuth } from "@/context/AuthContext";
+import getSocket from "@/util/sockets";
 
 const Header: React.FC = () => {
   // const user = localStorage.getItem("user");
@@ -35,6 +36,7 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
   const token = Cookies.get("token");
 
   // useEffect(() => {
@@ -76,6 +78,33 @@ const Header: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!token || !user?._id) return;
+
+    const socket = getSocket();
+
+    const handleConnect = () => {
+      socket.emit("join_user_channel", user._id);
+    };
+
+    const handleNewNotification = () => {
+      setHasNewNotification(true);
+    };
+
+    if (socket.connected) {
+      handleConnect();
+    } else {
+      socket.on("connect", handleConnect);
+    }
+
+    socket.on("new_notification", handleNewNotification);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("new_notification", handleNewNotification);
+    };
+  }, [token, user?._id]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -175,9 +204,15 @@ const Header: React.FC = () => {
               <div>
                 <div ref={notificationsRef} className="relative">
                   <div
-                    className="bg-gray50 rounded-full p-2 cursor-pointer"
-                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="relative bg-gray50 rounded-full p-2 cursor-pointer"
+                    onClick={() => {
+                      setShowNotifications(!showNotifications);
+                      setHasNewNotification(false);
+                    }}
                   >
+                    {hasNewNotification && (
+                      <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500" />
+                    )}
                     <NotificationsIcon />
                   </div>
                   <NotificationsMenu
