@@ -42,6 +42,7 @@ const BasicPanel: React.FC<BasicPanelProps> = ({
 
   return (
     <Formik
+      enableReinitialize
       initialValues={{
         // ...basicPanelFormFields.reduce((acc, item) => {
         //   acc[item.name] = formData?.[item.name] || "";
@@ -123,6 +124,7 @@ const BasicPanel: React.FC<BasicPanelProps> = ({
           <Button
             type="submit"
             label={isSubmitting ? "Saving..." : "Save Changes"}
+            disabled={isSubmitting}
             className="mt-5 md:w-auto w-full"
           />
         </Form>

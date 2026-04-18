@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TabGroup, TabPanels } from "@headlessui/react";
 import { ArrowLeft, RightArrow } from "@/app/components/common/allImages/AllImages";
 import Link from "next/link";
@@ -25,55 +25,76 @@ const ProfilePage = () => {
   const [selectedSubTab, setSelectedSubTab] = useState<number>(0);
   const [formData, setFormData] = useState<FormData>({});
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [images, setImages] = useState<File | null>(null);
+  const [pendingImages, setPendingImages] = useState<
+    { file: File; previewUrl: string }[]
+  >([]);
+  const pendingImagesRef = useRef<{ file: File; previewUrl: string }[]>([]);
   const [dropdowns, setDropdowns] = useState({});
 
   const handleChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const handleImageUpload = async (files: FileList | null) => {
+  const handleImageUpload = (files: FileList | null) => {
     if (!files) return;
 
-    let fileUrl :string;
-    const file = files[0]; // Take the first file only
-    const imageUrl = URL.createObjectURL(file);
-    const form = new FormData();
-    form.append("file", file);
-    const { data, status } = await uploadFile(form);
-    if (status === 200 && data?.fileUrl) fileUrl = data?.fileUrl;
+    const file = files[0];
+    if (!file) return;
 
-    setUploadedImages(prevImgs => ([
-      ...prevImgs,
-      fileUrl
-    ]));
-    setFormData(prevData => ({
-      ...prevData,
-      userImages: [...prevData?.userImages, fileUrl]
-    }))
-    setImages(file);
-    // setUploadedImages((prevImages) => [...prevImages, ...newImages]);
-    // handleImagesChange([...uploadedImages, ...newImages]);
-    // setImages(Array.from(files));
+    setPendingImages((prev) => {
+      prev.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+      return [
+        {
+          file,
+          previewUrl: URL.createObjectURL(file),
+        },
+      ];
+    });
   };
 
   const handleDeleteImage = (img: string) => {
-    setUploadedImages(prevImg => prevImg.filter(image => image !== img));
+    if (img.startsWith("blob:")) {
+      setPendingImages((prev) => {
+        const toRemove = prev.find((image) => image.previewUrl === img);
+        if (toRemove) URL.revokeObjectURL(toRemove.previewUrl);
+        return prev.filter((image) => image.previewUrl !== img);
+      });
+      return;
+    }
+
+    setUploadedImages([]);
   };
 
   const handleSubmit = async (formData: any) => {
-    const updatedFormData = {
-      ...formData,
-      ...(uploadedImages && {userImages: uploadedImages})
-    }
     try {
+      let avatarUrl = uploadedImages[0] || "";
+
+      if (pendingImages.length > 0) {
+        const form = new FormData();
+        form.append("file", pendingImages[0].file);
+        const { data, status } = await uploadFile(form);
+        if (status !== 200 || !data?.fileUrl) {
+          throw new Error("Image upload failed");
+        }
+        avatarUrl = data.fileUrl as string;
+      }
+
+      const updatedFormData = {
+        ...formData,
+        userImages: avatarUrl ? [avatarUrl] : [],
+      };
+
       const { data, status } = await updateUserProfile(updatedFormData);
       if (status === 200) {
         showToast(data?.message, "success");
+        pendingImages.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+        setPendingImages([]);
         getUsersProfile();
       } else {
         showToast(data?.message, "error");
       }
-    } catch (error) {}
+    } catch (error) {
+      showToast("Failed to save changes. Please try again.", "error");
+    }
   };
 
   const getUsersProfile = async () => {
@@ -90,8 +111,9 @@ const ProfilePage = () => {
           ...restUser,
         });
         if (restUser?.userImages) {
-          setImages(restUser?.userImages[0]);
-          setUploadedImages(restUser?.userImages);
+          setUploadedImages(restUser?.userImages[0] ? [restUser?.userImages[0]] : []);
+        } else {
+          setUploadedImages([]);
         }
         updateUser(response?.data?.user);
       }
@@ -100,6 +122,16 @@ const ProfilePage = () => {
 
   useEffect(() => {
     getUsersProfile();
+  }, []);
+  useEffect(() => {
+    pendingImagesRef.current = pendingImages;
+  }, [pendingImages]);
+  useEffect(() => {
+    return () => {
+      pendingImagesRef.current.forEach((image) =>
+        URL.revokeObjectURL(image.previewUrl)
+      );
+    };
   }, []);
   const getAllDropdowns = async () => {
       try {
@@ -176,7 +208,11 @@ const ProfilePage = () => {
                 {selectedMainTab === 0 && (
                   <MyAccountTab
                     formData={formData}
-                    images={uploadedImages}
+                    images={
+                      pendingImages[0]?.previewUrl
+                        ? [pendingImages[0].previewUrl]
+                        : uploadedImages
+                    }
                     // handleChange={handleChange}
                     handleDeleteImage={handleDeleteImage}
                     handleImageUpload={handleImageUpload}

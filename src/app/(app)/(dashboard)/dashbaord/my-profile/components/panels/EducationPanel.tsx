@@ -32,6 +32,7 @@ const EducationPanel: React.FC<EducationPanelProps> = ({
 
   return (
     <Formik
+      enableReinitialize
       initialValues={{
         ...educationFields.reduce((acc, item) => {
           acc[item.name] = formData?.[item.name] || "";
@@ -63,6 +64,7 @@ const EducationPanel: React.FC<EducationPanelProps> = ({
           <Button
             type="submit"
             label={isSubmitting ? "Saving..." : "Save Changes"}
+            disabled={isSubmitting}
             className="mt-5 md:w-auto w-full"
           />
         </Form>

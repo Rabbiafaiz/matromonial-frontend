@@ -23,6 +23,7 @@ const PersonalPanel: React.FC<PersonalPanelProps> = ({
 }) => {
   return (
     <Formik
+      enableReinitialize
       initialValues={{
         ...personalPanelFields.reduce((acc, item) => {
           acc[item.name] = formData?.[item.name] || "";
@@ -65,6 +66,7 @@ const PersonalPanel: React.FC<PersonalPanelProps> = ({
           <Button
             type="submit"
             label={isSubmitting ? "Saving..." : "Save Changes"}
+            disabled={isSubmitting}
             className="mt-5 md:w-auto w-full"
           />
         </Form>

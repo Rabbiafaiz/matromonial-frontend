@@ -53,6 +53,7 @@ const NewJoined = () => {
   const [showAllSuggestedUsers, setShowAllSuggestedUsers] = useState(false);
   const [showAllRecentlyViewed, setShowAllRecentlyViewed] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [contentVisible, setContentVisible] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const sliderRef = useRef<Slider | null>(null);
   const slickSettings = {
@@ -144,6 +145,15 @@ const NewJoined = () => {
     getNewUsersList();
   }, []);
 
+  useEffect(() => {
+    if (loading) {
+      setContentVisible(false);
+      return;
+    }
+    const timeout = setTimeout(() => setContentVisible(true), 20);
+    return () => clearTimeout(timeout);
+  }, [loading]);
+
   // Helper function to format user data for ProfileCard component
   const formatUserForCard = (user: UserData): ProfileCardProps => {
     return {
@@ -186,109 +196,144 @@ const NewJoined = () => {
     return age.toString();
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto p-4 text-center">
-        Loading profiles...
-      </div>
-    );
-  }
-
   return (
-    <main className="max-w-7xl mx-auto p-4">
-      {featuredUsers.length > 0 && (
-        <div className="mt-4 mb-6 md:hidden">
-          <Slider ref={sliderRef} {...slickSettings}>
-            {featuredUsers.map((user) => (
-              <div key={user._id} className="px-2">
-                <FeaturedProfileCard {...formatUserForCard(user)} />
-              </div>
-            ))}
-          </Slider>
-
-          {/* Custom Pagination Dots */}
-          <div className="flex justify-center mt-2">
-            {featuredUsers.map((_, index) => (
+    <main className="max-w-7xl mx-auto p-4 min-h-[720px]">
+      {loading ? (
+        <div className="min-h-[620px] rounded-2xl bg-white/70 p-4">
+          <div className="h-6 w-40 rounded bg-gray-200 mb-6 animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, index) => (
               <div
                 key={index}
-                className={`h-1.5 rounded-full mx-0.5 cursor-pointer ${
-                  activeSlide === index
-                    ? "bg-orange-500 w-4"
-                    : "bg-orange-300 w-1.5"
-                }`}
-                onClick={() => sliderRef.current?.slickGoTo(index)}
-              />
+                className="bg-white shadow-lg rounded-xl relative animate-pulse block"
+              >
+                <div className="w-full h-[200px] bg-gray-200 rounded-t-xl" />
+                <div className="mt-1">
+                  <div className="px-3 pb-3 flex flex-col gap-2">
+                    <div className="mt-2">
+                      <div className="h-5 w-3/4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
+                    </div>
+                    <div className="h-4 w-5/6 bg-gray-200 rounded mt-1"></div>
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
+                      <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
-      )}
-      {recentlyViewedUsers.length > 0 && (
-        <section className="mb-8">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold">Recently Viewed</h2>
-            {recentlyViewedUsers.length > 5 && (
-              <button
-                onClick={() => setShowAllRecentlyViewed(!showAllRecentlyViewed)}
-                className="text-orange-500 font-semibold"
-              >
-                {showAllRecentlyViewed ? "Show Less" : "See All"}
-              </button>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            {(showAllRecentlyViewed
-              ? recentlyViewedUsers
-              : recentlyViewedUsers.slice(0, 5)
-            ).map((user) => (
-              <ProfileCard key={user._id} {...formatUserForCard(user)} />
-            ))}
-          </div>
-        </section>
-      )}
+      ) : (
+        <div
+          className={`transition-all duration-300 ${
+            contentVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-2"
+          }`}
+        >
+          {featuredUsers.length > 0 && (
+            <div className="mt-4 mb-6 md:hidden">
+              <Slider ref={sliderRef} {...slickSettings}>
+                {featuredUsers.map((user) => (
+                  <div key={user._id} className="px-2">
+                    <FeaturedProfileCard {...formatUserForCard(user)} />
+                  </div>
+                ))}
+              </Slider>
 
-      {suggestedUsers.length > 0 && (
-        <section className="mb-8">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold">Suggested For You</h2>
-            {suggestedUsers.length > 5 && (
-              <button
-                onClick={() => setShowAllSuggestedUsers(!showAllSuggestedUsers)}
-                className="text-orange-500 font-semibold"
-              >
-                {showAllSuggestedUsers ? "Show Less" : "See All"}
-              </button>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            {(showAllSuggestedUsers
-              ? suggestedUsers
-              : suggestedUsers.slice(0, 5)
-            ).map((user) => (
-              <ProfileCard key={user._id} {...formatUserForCard(user)} />
-            ))}
-          </div>
-        </section>
-      )}
+              {/* Custom Pagination Dots */}
+              <div className="flex justify-center mt-2">
+                {featuredUsers.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1.5 rounded-full mx-0.5 cursor-pointer ${
+                      activeSlide === index
+                        ? "bg-orange-500 w-4"
+                        : "bg-orange-300 w-1.5"
+                    }`}
+                    onClick={() => sliderRef.current?.slickGoTo(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {recentlyViewedUsers.length > 0 && (
+            <section className="mb-8">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold">Recently Viewed</h2>
+                {recentlyViewedUsers.length > 5 && (
+                  <button
+                    onClick={() =>
+                      setShowAllRecentlyViewed(!showAllRecentlyViewed)
+                    }
+                    className="text-orange-500 font-semibold"
+                  >
+                    {showAllRecentlyViewed ? "Show Less" : "See All"}
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                {(showAllRecentlyViewed
+                  ? recentlyViewedUsers
+                  : recentlyViewedUsers.slice(0, 5)
+                ).map((user) => (
+                  <ProfileCard key={user._id} {...formatUserForCard(user)} />
+                ))}
+              </div>
+            </section>
+          )}
 
-      {newUsers.length > 0 && (
-        <section className="mb-8">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold">New Joined</h2>
-            {newUsers.length > 5 && (
-              <button
-                onClick={() => setShowAllNewUsers(!showAllNewUsers)}
-                className="text-orange-500 font-semibold"
-              >
-                {showAllNewUsers ? "Show Less" : "See All"}
-              </button>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            {(showAllNewUsers ? newUsers : newUsers.slice(0, 5)).map((user) => (
-              <ProfileCard key={user._id} {...formatUserForCard(user)} />
-            ))}
-          </div>
-        </section>
+          {suggestedUsers.length > 0 && (
+            <section className="mb-8">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold">Suggested For You</h2>
+                {suggestedUsers.length > 5 && (
+                  <button
+                    onClick={() =>
+                      setShowAllSuggestedUsers(!showAllSuggestedUsers)
+                    }
+                    className="text-orange-500 font-semibold"
+                  >
+                    {showAllSuggestedUsers ? "Show Less" : "See All"}
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                {(showAllSuggestedUsers
+                  ? suggestedUsers
+                  : suggestedUsers.slice(0, 5)
+                ).map((user) => (
+                  <ProfileCard key={user._id} {...formatUserForCard(user)} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {newUsers.length > 0 && (
+            <section className="mb-8">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold">New Joined</h2>
+                {newUsers.length > 5 && (
+                  <button
+                    onClick={() => setShowAllNewUsers(!showAllNewUsers)}
+                    className="text-orange-500 font-semibold"
+                  >
+                    {showAllNewUsers ? "Show Less" : "See All"}
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                {(showAllNewUsers ? newUsers : newUsers.slice(0, 5)).map(
+                  (user) => (
+                    <ProfileCard key={user._id} {...formatUserForCard(user)} />
+                  ),
+                )}
+              </div>
+            </section>
+          )}
+        </div>
       )}
     </main>
   );

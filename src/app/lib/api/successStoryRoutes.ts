@@ -1,9 +1,18 @@
 import axios from "axios";
 import axiosInstance from "../axiosInstance";
 
-export const getSuccessStoriesList = async () => {
+interface SuccessStoriesQueryParams {
+  page?: number;
+  limit?: number;
+}
+
+export const getSuccessStoriesList = async (
+  params?: SuccessStoriesQueryParams,
+) => {
   try {
-    const response = await axiosInstance.get("/user/get-success-stories");
+    const response = await axiosInstance.get("/user/get-success-stories", {
+      params,
+    });
     return response; // Return full response
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {

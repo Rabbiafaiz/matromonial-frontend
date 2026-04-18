@@ -22,7 +22,7 @@ interface ProfilePanelProps {
   // handleChange: (name: string, value: string) => void;
   handleImageUpload: (images: FileList | null) => void;
   handleDeleteImage: (img: string) => void;
-  handleFormSubmit: (values: ProfileFormData) => void;
+  handleFormSubmit: (values: ProfileFormData) => Promise<void> | void;
   options: any;
 }
 
@@ -82,33 +82,29 @@ const MyAccountTab: React.FC<ProfilePanelProps> = ({
           return (
             <Form onSubmit={handleSubmit}>
               <h3 className="text-lg font-semibold mb-2">Profile Images</h3>
-              {!images ||
-                (images.length < 8 && (
-                  <ImageUploader
-                    onUpload={handleImageUpload}
-                    maxImages={1}
-                    className="w-72"
-                  />
-                ))}
+              {(!images || images.length === 0) && (
+                <ImageUploader
+                  onUpload={handleImageUpload}
+                  maxImages={1}
+                  className="w-72"
+                />
+              )}
               <div className="flex gap-2 mt-4 mb-12">
-                {images &&
-                  images?.length > 0 &&
-                  images.map((img, index) => (
-                    <div className="relative">
-                      <img
-                        key={index}
-                        src={img}
-                        alt={`Profile`}
-                        className="w-36 h-32 object-contain rounded-md"
-                      />
-                      <div
-                        className="absolute top-0 right-0 bg-primary flex items-center justify-center text-white text-xs w-3 h-3 rounded-sm cursor-pointer"
-                        onClick={() => handleDeleteImage(img)}
-                      >
-                        ×
-                      </div>
+                {images && images.length > 0 && (
+                  <div className="relative">
+                    <img
+                      src={images[0]}
+                      alt="Profile Avatar"
+                      className="w-36 h-32 object-contain rounded-md"
+                    />
+                    <div
+                      className="absolute top-0 right-0 bg-primary flex items-center justify-center text-white text-xs w-3 h-3 rounded-sm cursor-pointer"
+                      onClick={() => handleDeleteImage(images[0])}
+                    >
+                      ×
                     </div>
-                  ))}
+                  </div>
+                )}
               </div>
 
               <h3 className="text-lg font-semibold mb-6">Account Info</h3>
@@ -148,6 +144,7 @@ const MyAccountTab: React.FC<ProfilePanelProps> = ({
               <Button
                 type="submit"
                 label={isSubmitting ? "Saving..." : "Save Changes"}
+                disabled={isSubmitting}
                 className="mt-5 md:w-auto w-full"
               />
 

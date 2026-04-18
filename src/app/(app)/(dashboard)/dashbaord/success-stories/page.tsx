@@ -2,52 +2,70 @@
 import {
   ReviewIcon,
   StarIcon,
-  SuccessStory,
 } from "@/app/components/common/allImages/AllImages";
-import Button from "@/app/components/common/buttons/Button";
 import CustomLoader from "@/app/components/common/loader/CustomLoader";
 import Pagination from "@/app/components/common/pagination/Pagination";
 import { getSuccessStoriesList } from "@/app/lib/api/successStoryRoutes";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
-const testimonials = [
-  {
-    image: SuccessStory,
-    name: "John Doe",
-    designation: "Research Manager",
-    review:
-      "Lorem ipsum dolor sit amet consectetur. Consequat auctor consectetur nunc vitae dolor blandit. Elit enim massa etiam. Lorem ipsum dolor sit amet consectetur. Consequat auctor consectetur nunc vitae dolor blandit. Elit enim massa etiam. Elit enim massa etiam. Lorem ipsum dolor sit amet consectetur. Consequat auctor consectetur.",
-  },
-  {
-    image: SuccessStory,
-    name: "Jane Smith",
-    designation: "Software Engineer",
-    review:
-      "Lorem ipsum dolor sit amet consectetur. Consequat auctor consectetur nunc vitae dolor blandit. Elit enim massa etiam. Lorem ipsum dolor sit amet consectetur. Consequat auctor consectetur nunc vitae dolor blandit. Elit enim massa etiam. Elit enim massa etiam. Lorem ipsum dolor sit amet consectetur. Consequat auctor consectetur.",
-  },
-];
+interface PaginationData {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+const STORIES_PAGE_LIMIT = 5;
 
 const SuccessStoriesPage = () => {
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const [successStoriesList, setSuccessStoriesList] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
+  const [pagination, setPagination] = useState<PaginationData>({
+    page: 1,
+    limit: STORIES_PAGE_LIMIT,
+    totalCount: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
 
-  const getSuccessStories = async () => {
+  const pageParam = Number(searchParams.get("page"));
+  const currentPage =
+    Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1;
+
+  const getSuccessStories = async (page: number) => {
     try {
       setIsLoading(true);
-      const { data } = await getSuccessStoriesList();
-      setSuccessStoriesList(data?.successStories);
+      const { data } = await getSuccessStoriesList({
+        page,
+        limit: STORIES_PAGE_LIMIT,
+      });
+      setSuccessStoriesList(data?.successStories || []);
+      setPagination({
+        page: data?.pagination?.page || page,
+        limit: data?.pagination?.limit || STORIES_PAGE_LIMIT,
+        totalCount: data?.pagination?.totalCount || 0,
+        totalPages: data?.pagination?.totalPages || 1,
+        hasNextPage: Boolean(data?.pagination?.hasNextPage),
+        hasPreviousPage: Boolean(data?.pagination?.hasPreviousPage),
+      });
     } catch (error) {
     } finally {
       setIsLoading(false);
+      setHasFetched(true);
     }
   };
+
   useEffect(() => {
-    getSuccessStories();
-  }, []);
+    getSuccessStories(currentPage);
+  }, [currentPage]);
 
   return (
     <section className="">
@@ -66,14 +84,48 @@ const SuccessStoriesPage = () => {
           </li>
         </ul>
         {isLoading ? (
-          <div className="w-full h-full mt-10 mb-32 flex justify-center">
-            <CustomLoader />
+          <div className="mb-10">
+            <div className="flex flex-col gap-10">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <React.Fragment key={`skeleton-${index}`}>
+                  <div className="flex justify-center w-full animate-pulse shadow-lg rounded-2xl">
+                    <div className="bg-gray-200 w-full min-h-[350px] rounded-3xl text-left flex justify-between overflow-hidden relative">
+                      <div className="lg:py-20 py-8 px-4 lg:px-12 w-full md:w-[60%] flex flex-col justify-center">
+                        <div className="flex mb-4">
+                          {Array(5)
+                            .fill("")
+                            .map((_, i) => (
+                              <div
+                                key={i}
+                                className="w-6 h-6 mr-1 bg-gray-300 rounded-full"
+                              />
+                            ))}
+                        </div>
+                        <div className="space-y-3 md:mt-9 mt-4 w-full">
+                          <div className="h-5 bg-gray-300 rounded w-full"></div>
+                          <div className="h-5 bg-gray-300 rounded w-5/6"></div>
+                          <div className="h-5 bg-gray-300 rounded w-4/6"></div>
+                        </div>
+                        <div className="mt-7">
+                          <div className="h-7 bg-gray-300 rounded w-1/3 mb-2"></div>
+                          <div className="h-4 bg-gray-300 rounded w-1/4"></div>
+                        </div>
+                      </div>
+                      <div className="md:block hidden w-[40%] bg-gray-300 h-full absolute right-0 top-0 bottom-0"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="h-12 w-full sm:w-40 bg-gray-200 rounded-full animate-pulse block"></div>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="mb-10">
             <div className="flex flex-col gap-10">
-              {successStoriesList.length > 0 ? (
-                successStoriesList.map((testimonial, index) => (
+              {successStoriesList?.length > 0 ? (
+                successStoriesList?.map((testimonial, index) => (
                   <React.Fragment key={index}>
                     <div className="flex justify-center w-full">
                       <div className="bg-primary custom-rounded text-left flex justify-between">
@@ -100,39 +152,44 @@ const SuccessStoriesPage = () => {
                         </div>
                         <Image
                           src={testimonial.image}
+                          width={500}
+                          height={500}
                           alt={"Testimonial Image"}
                           className="md:block hidden w-full h-full"
                           objectFit="cover"
                         />
                       </div>
                     </div>
-                    <div>
+                    {/* <div>
                       <Button
                         label="See Detail"
                         variant="secondary"
                         className="px-10 w-full sm:w-auto"
                         onClick={() =>
                           router.push(
-                            `/dashbaord/success-stories/${testimonial?._id}`
+                            `/dashbaord/success-stories/${testimonial?._id}`,
                           )
                         }
                       />
-                    </div>
+                    </div> */}
                   </React.Fragment>
                 ))
-              ) : (
+              ) : hasFetched ? (
                 <div>
                   <h4 className="md:text-lg text-center min-h-[40vh] text-base font-normal text-gray-900 mb-6">
                     No Stories Found!
                   </h4>
                 </div>
-              )}
+              ) : null
+              }
             </div>
 
-            {successStoriesList.length > 0 && (
-              <Suspense fallback={<div>Loading pagination...</div>}>
-                <Pagination />
-              </Suspense>
+            {successStoriesList?.length > 0 && pagination?.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                baseUrl="/dashbaord/success-stories"
+              />
             )}
           </div>
         )}

@@ -49,6 +49,7 @@ const NearestMe = () => {
   const [showAllSuggestedUsers, setShowAllSuggestedUsers] = useState(false);
   const [showAllRecentlyViewed, setShowAllRecentlyViewed] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [contentVisible, setContentVisible] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const sliderRef = useRef<Slider | null>(null);
   const slickSettings = {
@@ -112,6 +113,15 @@ const NearestMe = () => {
     fetchNearestUsers();
   }, []);
 
+  useEffect(() => {
+    if (loading) {
+      setContentVisible(false);
+      return;
+    }
+    const timeout = setTimeout(() => setContentVisible(true), 20);
+    return () => clearTimeout(timeout);
+  }, [loading]);
+
   const formatUserForCard = (user: UserData): ProfileCardProps => {
     return {
       id: user._id,
@@ -143,16 +153,41 @@ const NearestMe = () => {
     return age.toString();
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto p-4 text-center">
-        Loading profiles...
-      </div>
-    );
-  }
-
   return (
-    <main className="max-w-7xl mx-auto p-4">
+    <main className="max-w-7xl mx-auto p-4 min-h-[720px]">
+      {loading ? (
+        <div className="min-h-[620px] rounded-2xl bg-white/70 p-4">
+          <div className="h-6 w-40 rounded bg-gray-200 mb-6 animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="bg-white shadow rounded-xl relative animate-pulse block"
+              >
+                <div className="w-full h-[200px] bg-gray-200 rounded-t-xl" />
+                <div className="mt-1">
+                  <div className="px-3 pb-3 flex flex-col gap-2">
+                    <div className="mt-2">
+                      <div className="h-5 w-3/4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
+                    </div>
+                    <div className="h-4 w-5/6 bg-gray-200 rounded mt-1"></div>
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="h-4 w-1/3 bg-gray-200 rounded"></div>
+                      <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div
+          className={`transition-all duration-300 ${
+            contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+          }`}
+        >
       {featuredUsers.length > 0 && (
         <div className="mt-4 mb-6 md:hidden">
           <Slider ref={sliderRef} {...slickSettings}>
@@ -249,6 +284,8 @@ const NearestMe = () => {
             ))}
           </div>
         </section>
+      )}
+        </div>
       )}
     </main>
   );

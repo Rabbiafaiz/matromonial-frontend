@@ -21,7 +21,8 @@ const CriteriaPanel: React.FC<CriteriaPanelProps> = ({ formData, handleFormSubmi
 
   return (
     <Formik
-      initialValues={{partnerExpectation: formData?.partnerExpectation}}
+      enableReinitialize
+      initialValues={{ partnerExpectation: formData?.partnerExpectation || "" }}
       validationSchema={validationSchema}
       onSubmit={handleFormSubmit}
     >
@@ -43,6 +44,7 @@ const CriteriaPanel: React.FC<CriteriaPanelProps> = ({ formData, handleFormSubmi
           <Button
             type="submit"
             label={isSubmitting ? "Saving..." : "Save Changes"}
+            disabled={isSubmitting}
             className="mt-5 md:w-auto w-full"
           />
         </Form>
