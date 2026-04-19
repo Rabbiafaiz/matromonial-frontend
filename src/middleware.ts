@@ -3,8 +3,9 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
+  const { pathname } = req.nextUrl;
 
-  // Define protected routes
+  // Define protected route prefixes (including nested routes)
   const protectedRoutes = ["/dashbaord", "/tell-us-more-about-yourself"];
 
   // Redirect if not logged in
@@ -12,10 +13,14 @@ export function middleware(req: NextRequest) {
   //   return NextResponse.redirect(new URL("/auth/login", req.url));
   // }
 
-  if (protectedRoutes.includes(req.nextUrl.pathname)) {
+  const isProtectedRoute = protectedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+
+  if (isProtectedRoute) {
     if (!token) {
       const loginUrl = new URL("/auth/login", req.url);
-      loginUrl.searchParams.set("from", req.nextUrl.pathname);
+      loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);
     }
 
@@ -30,5 +35,5 @@ export function middleware(req: NextRequest) {
 
 // Apply to specific routes
 export const config = {
-  matcher: ["/dashbaord", "/tell-us-more-about-yourself"],
+  matcher: ["/dashbaord/:path*", "/tell-us-more-about-yourself/:path*"],
 };
