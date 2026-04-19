@@ -52,19 +52,21 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       className="bg-white shadow rounded-xl relative"
       onClick={() => router.push(`/dashbaord/profile-details/${id}`)}
     >
-      <img
-        src={
-          image
-            ? typeof image === "string"
-              ? image // Use the string directly
-              : image.src
-            : gender === "male"
-              ? MalePlaceholder.src
-              : FemalePlaceholder.src
-        }
-        alt="Profile Picture"
-        className="w-full h-50 object-cover rounded-t-lg"
-      />
+      <div className="w-full h-[220px] rounded-t-lg overflow-hidden bg-gray-100">
+        <img
+          src={
+            image
+              ? typeof image === "string"
+                ? image // Use the string directly
+                : image.src
+              : gender === "male"
+                ? MalePlaceholder.src
+                : FemalePlaceholder.src
+          }
+          alt="Profile Picture"
+          className="w-full h-full object-contain"
+        />
+      </div>
       <div className="mt-1">
         <div className="flex items-center space-x-2">
           {isNew && (

@@ -47,9 +47,9 @@ export const register = async (credentials: {
   }
 };
 
-export const logout = async (user: any) => {
+export const logout = async () => {
   try {
-    const response = await axiosInstance.post("/user/logout", user);
+    const response = await axiosInstance.post("/user/logout");
 
     return response; // Return full response
   } catch (error) {

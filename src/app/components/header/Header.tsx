@@ -139,8 +139,10 @@ const Header: React.FC = () => {
               alt={"logo"}
               width={150}
               height={130}
-              loading="lazy"
-              placeholder="blur"
+              priority
+              draggable={false}
+              className="select-none"
+              style={{ WebkitTapHighlightColor: "transparent" }}
               onClick={() => router.push("/")}
             />
           </div>
@@ -170,7 +172,7 @@ const Header: React.FC = () => {
               { href: "/dashbaord", label: "Dashboard" },
               { href: "/about", label: "About" },
               { href: "/dashbaord/success-stories", label: "Success Stories" },
-              { href: "/membership-plans", label: "Pricing" },
+              { href: "/#membership-plans", label: "Pricing" },
               { href: "/contact", label: "Contact" },
             ].map((item, i) => (
               <Link key={i} href={item.href} onClick={() => setIsMenuOpen(false)}>

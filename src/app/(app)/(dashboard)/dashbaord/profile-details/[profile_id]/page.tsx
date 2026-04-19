@@ -233,6 +233,50 @@ const ProfileDetail = ({ params }: any) => {
 
         {/* Right Section */}
         <div className="grid grid-cols-1 gap-2 md:gap-6 px-4 md:px-8">
+          {/* Basic Information */}
+          <div className="border-b border-gray pb-4">
+            <h3 className="font-bold text-lg">Basic Information</h3>
+            <ul className="text-sm text-gray-600 space-y-1 mt-2 grid md:grid-cols-2 grid-cols-1 gap-5">
+              <li>
+                <span className="text-normal mb-1">Age:</span>{" "}
+                {userDetails?.age || "N/A"}
+              </li>
+              <li>
+                <span className="text-normal mb-1">Marital Status:</span>{" "}
+                {userDetails?.maritalStatus || "N/A"}
+              </li>
+              <li>
+                <span className="text-normal mb-1">Gender:</span>{" "}
+                {userDetails?.gender || "N/A"}
+              </li>
+              <li>
+                <span className="text-normal mb-1">Height:</span>{" "}
+                {userDetails?.height || "N/A"}
+              </li>
+              <li>
+                <span className="text-normal mb-1">Caste:</span>{" "}
+                {userDetails?.cast ||
+                  userDetails?.horoscopeDetails?.caste ||
+                  "N/A"}
+              </li>
+            </ul>
+          </div>
+
+          {/* Location Information */}
+          <div className="border-b border-gray pb-4">
+            <h3 className="font-bold text-lg">Location Information</h3>
+            <ul className="text-sm text-gray-600 space-y-1 mt-2 grid md:grid-cols-2 grid-cols-1 gap-5">
+              <li>
+                <span className="text-normal mb-1">City:</span>{" "}
+                {userDetails?.city || userDetails?.FamilyDetails?.city || "N/A"}
+              </li>
+              <li>
+                <span className="text-normal mb-1">State:</span>{" "}
+                {userDetails?.FamilyDetails?.state || "N/A"}
+              </li>
+            </ul>
+          </div>
+
           {/* Contact Details */}
           <div className="border-b border-gray pb-4">
             <h3 className="font-bold text-lg">Contact Details</h3>

@@ -22,13 +22,11 @@ interface ProfileMenuProps {
 const ProfileMenu: React.FC<ProfileMenuProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { logoutInternal, user } = useAuth();
-  const currentPlanJson = localStorage.getItem("currentPlan");
-  const currentPlan = currentPlanJson ? JSON.parse(currentPlanJson) : {};
+  const { logoutInternal, user, currentPlan } = useAuth();
 
   const handleLogout = async () => {
     try {
-      const response = await logout(user);
+      const response = await logout();
       if (response?.status === 200) {
         logoutInternal();
         router.push("/auth/login");
@@ -81,9 +79,11 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ isOpen, onClose }) => {
                 size="sm"
                 onClick={() => router.push("/membership-plans")}
               />
-            ) : currentPlan && (
+            ) : (
               <div className="w-full flex justify-between items-center border border-primary rounded-full lg:rounded-xl py-3 px-4 bg-orange-50">
-                <span className="font-semibold">{currentPlan?.title}</span>
+                <span className="font-semibold">
+                  {currentPlan?.title || "Active Membership"}
+                </span>
                 <Button label="In use" size="sm" />
               </div>
             )}

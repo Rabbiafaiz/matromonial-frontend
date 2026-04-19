@@ -99,7 +99,10 @@ const PricingPlans: React.FC = () => {
         : {};
     localStorage.setItem("currentPlan", JSON.stringify(currentPlan));
     return (
-      <section className="md:px-0 max-w-full w-full sm:max-w-[707px] mx-auto my-6 sm:my-12">
+      <section
+        id="membership-plans"
+        className="md:px-0 max-w-full w-full sm:max-w-[707px] mx-auto my-6 sm:my-12"
+      >
         <div className="rounded-3xl sm:border-[0.5px] sm:border-gray px-4 sm:px-10 py-6 sm:py-10">
           {/* Current Plan Section */}
           <div className="flex flex-col">
@@ -179,7 +182,7 @@ const PricingPlans: React.FC = () => {
   }
 
   return (
-    <section className="relative py-16 border-b border-gray">
+    <section id="membership-plans" className="relative py-16 border-b border-gray">
       <div className="absolute inset-0 z-0">
         <Image
           src={PricingBg}
