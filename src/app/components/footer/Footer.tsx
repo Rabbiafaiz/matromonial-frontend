@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import {
-  AppStore,
   Facebook,
   GooglePlay,
   Insta,
@@ -54,11 +53,11 @@ const Footer = () => {
           <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 mb-8 lg:mb-0">
             <h3 className="font-bold mb-4">About</h3>
             <ul className="space-y-2">
-              <li>
+              {/* <li>
                 <a href="#" className="text-sm text-gray-300 hover:text-white">
                   Services
                 </a>
-              </li>
+              </li> */}
               <li>
                 <Link
                   href="/dashbaord/success-stories"
@@ -123,12 +122,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#faqs"
+                <Link
+                  href="/faq"
                   className="text-sm text-gray-300 hover:text-white"
                 >
                   FAQs
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -163,7 +162,9 @@ const Footer = () => {
               </span>
             </div>
             <div>
-              <a href="https://selflance.com/" target="_blank">Designed & Developed by Selflance</a>
+              <a href="https://selflance.com/" target="_blank">
+                Designed & Developed by Selflance
+              </a>
             </div>
           </div>
         </div>

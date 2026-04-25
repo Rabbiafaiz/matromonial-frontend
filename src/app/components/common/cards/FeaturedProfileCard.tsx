@@ -60,8 +60,8 @@ const FeaturedProfileCard: React.FC<FeaturedProfileCardProps> = ({
               ? image // Use the string directly
               : image.src
             : gender === "male"
-            ? MalePlaceholder.src
-            : FemalePlaceholder.src
+              ? MalePlaceholder.src
+              : FemalePlaceholder.src
         }
         alt="Profile"
         className="w-full h-full object-cover"
@@ -96,7 +96,7 @@ const FeaturedProfileCard: React.FC<FeaturedProfileCardProps> = ({
       <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-xl font-bold">{name}</h2>
+            <h2 className="text-md font-bold">{name}</h2>
             <p className="text-sm">
               Age {age}, {height}
             </p>
@@ -140,17 +140,16 @@ const FeaturedProfileCard: React.FC<FeaturedProfileCardProps> = ({
                       name,
                       message: "",
                       time: new Date(),
-                      image:
-                        image
-                          ? typeof image === "string"
-                            ? image
-                            : image.src
-                          : gender === "male"
+                      image: image
+                        ? typeof image === "string"
+                          ? image
+                          : image.src
+                        : gender === "male"
                           ? MalePlaceholder.src
                           : FemalePlaceholder.src,
                       roomId: generateRoomId(id, user?._id),
                       gender,
-                    })
+                    }),
                   );
                   router.push(`/dashbaord/messages?receiverId=${id}`);
                 }}

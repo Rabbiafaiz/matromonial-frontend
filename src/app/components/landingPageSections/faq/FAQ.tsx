@@ -38,7 +38,7 @@ const FAQSection = () => {
 
   return (
     <section className="py-16 border-b border-gray" id="faqs">
-      <div className="max-w-7xl mx-auto md:px-8 text-center">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 text-center">
         <h2 className="text-sm font-medium text-normal uppercase">
           Frequently Asked Questions
         </h2>
@@ -65,7 +65,7 @@ const FAQSection = () => {
                     className="text-3xl font-light rounded-full text-darkBlue bg-white w-8 h-8 pb-1 flex items-center justify-center"
                     onClick={() => toggleFAQ(index)}
                   >
-                    {activeIndex === index ? "×" : "+"}
+                    {activeIndex === index ? "\u00d7" : "+"}
                   </button>
                 </div>
               </div>

@@ -51,7 +51,14 @@ export const completeProfileValidation = Yup.object({
     dosh: Yup.string().required("Dosh is required"),
     star: Yup.string().required("Star is required"),
     birthTime: Yup.string().required("Birth time is required"),
-    birthPlace: Yup.string().required("Birth place is required"),
+    birthPlace: Yup.string()
+      .trim()
+      .max(25, "Birth place must be 25 characters or less")
+      .matches(/^[A-Za-z\s]+$/, {
+        message: "Birth place can only contain alphabets and spaces",
+        excludeEmptyString: true,
+      })
+      .required("Birth place is required"),
     religion: Yup.string().required("Religion is required"),
     caste: Yup.string().required("Caste is required"),
     motherTongue: Yup.string().required("Mother tongue is required"),
