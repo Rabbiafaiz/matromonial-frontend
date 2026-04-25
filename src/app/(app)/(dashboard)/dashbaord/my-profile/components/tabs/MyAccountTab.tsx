@@ -67,18 +67,30 @@ const MyAccountTab: React.FC<ProfilePanelProps> = ({
         initialValues={{
           email: formData?.email,
           name: formData?.name,
-          phone: formData?.phone,
+          phone: formData?.phone || "+91",
         }}
         validationSchema={Yup.object({
           name: Yup.string().required("Full Name is required"),
           email: Yup.string()
             .email("Invalid email")
             .required("Email is required"),
-          phone: Yup.string().required("Phone number is required"),
+          phone: Yup.string()
+            .matches(
+              /^\+91\d{10}$/,
+              "Phone must start with +91 and have 10 digits",
+            )
+            .required("Phone number is required"),
         })}
         onSubmit={handleFormSubmit}
       >
-        {({ errors, touched, values, isSubmitting, handleSubmit }) => {
+        {({
+          errors,
+          touched,
+          values,
+          isSubmitting,
+          handleSubmit,
+          setFieldValue,
+        }) => {
           return (
             <Form onSubmit={handleSubmit}>
               <h3 className="text-lg font-semibold mb-2">Profile Images</h3>
@@ -138,6 +150,23 @@ const MyAccountTab: React.FC<ProfilePanelProps> = ({
                   value={values.phone}
                   error={errors.phone}
                   touched={touched.phone}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    let value = e.target.value;
+
+                    // Always enforce +91
+                    if (!value.startsWith("+91")) {
+                      value = "+91";
+                    }
+
+                    // Extract only digits after +91
+                    let digits = value.replace("+91", "").replace(/\D/g, "");
+
+                    // Limit to 10 digits
+                    digits = digits.slice(0, 10);
+
+                    // Set final value
+                    setFieldValue("phone", "+91" + digits);
+                  }}
                 />
               </div>
 

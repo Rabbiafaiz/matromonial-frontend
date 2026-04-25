@@ -90,7 +90,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
         <div className="px-3 pb-3 flex flex-col gap-2">
           <div>
-            <h3 className="font-bold text-lg mt-2">{name}</h3>
+            <h3 className="font-bold text-md mt-2">{name}</h3>
             <p className="text-sm text-normal">{`Age ${age}, ${height}`}</p>
           </div>
           <p className="text-sm text-normal flex items-center gap-1">
@@ -132,17 +132,16 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
                         name,
                         message: "",
                         time: new Date(),
-                        image:
-                          image
-                            ? typeof image === "string"
-                              ? image
-                              : image.src
-                            : gender === "male"
+                        image: image
+                          ? typeof image === "string"
+                            ? image
+                            : image.src
+                          : gender === "male"
                             ? MalePlaceholder.src
                             : FemalePlaceholder.src,
                         roomId: generateRoomId(id, user?._id),
                         gender,
-                      })
+                      }),
                     );
                     router.push(`/dashbaord/messages?receiverId=${id}`);
                   }}

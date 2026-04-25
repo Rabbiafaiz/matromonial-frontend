@@ -29,6 +29,9 @@ const tabs = [
   { id: 5, label: "Family Details" },
 ];
 
+const sanitizeBirthPlace = (value: string) =>
+  value.replace(/[^A-Za-z\s]/g, "").slice(0, 25);
+
 interface SubTabProps {
   values: any;
   handleChange: (e: React.ChangeEvent<any>) => void;
@@ -329,6 +332,14 @@ function ReligionInfo({
           placeholder={"Birth Place"}
           name={"horoscopeDetails.birthPlace"}
           value={values?.horoscopeDetails?.birthPlace}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setFieldValue(
+              "horoscopeDetails.birthPlace",
+              sanitizeBirthPlace(e.target.value)
+            )
+          }
+          maxLength={25}
+          inputMode="text"
           touched={touched?.horoscopeDetails?.birthPlace}
           error={errors?.horoscopeDetails?.birthPlace}
           // options={cityOptions}
