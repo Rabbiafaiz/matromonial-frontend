@@ -6,9 +6,13 @@ let socket: Socket | null = null;
 
 const getSocket = () => {
   if (!socket) {
+    const isProd = process.env.NODE_ENV === "production";
     socket = io(BASE_URL, {
-      // Keep websocket first, but allow polling fallback behind strict proxies.
-      transports: ["websocket", "polling"],
+      // Production proxy currently rejects WS upgrade ("code: 3 Bad request"),
+      // so keep transport on polling for stable real-time behavior.
+      transports: isProd ? ["polling"] : ["websocket", "polling"],
+      upgrade: !isProd,
+      path: "/socket.io/",
       withCredentials: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
