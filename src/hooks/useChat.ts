@@ -1,8 +1,6 @@
 import { generateRoomId } from "@/util/util";
 import { useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import getSocket from "@/util/sockets";
 
 interface Message {
   roomId: string;
@@ -16,33 +14,34 @@ interface Message {
 const useChat = (roomId: string | null, userId: string) => {
   const userJson = localStorage.getItem("user");
   const user = userJson ? JSON.parse(userJson) : null;
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    const newSocket = io(BASE_URL, {
-      withCredentials: true,
-    });
-
-    setSocket(newSocket);
+    const socket = getSocket();
 
     if (roomId) {
-      newSocket.emit("join_room", roomId);
+      socket.emit("join_room", roomId);
     }
 
-    newSocket.on("receive_message", (message: Message) => {
+    const handleReceiveMessage = (message: Message) => {
       console.log(message);
-      
-      if (user?._id === message?.receiverId)
+
+      if (user?._id === message?.receiverId) {
         setMessages((prevMessages) => [...prevMessages, message]);
-    });
+      }
+    };
+    socket.on("receive_message", handleReceiveMessage);
 
     return () => {
-      newSocket.disconnect();
+      socket.off("receive_message", handleReceiveMessage);
+      if (roomId) {
+        socket.emit("leave_room", roomId);
+      }
     };
   }, [roomId]);
 
   const sendMessage = (messageText: string, receiverId: string) => {
+    const socket = getSocket();
     if (socket) {
       const messageData = {
         roomId: roomId ? roomId : generateRoomId(receiverId, userId),
@@ -52,7 +51,7 @@ const useChat = (roomId: string | null, userId: string) => {
         text: messageText,
         user: {
           _id: userId,
-          name: user?.name
+          name: user?.name,
         },
         createdAt: new Date(),
       };
@@ -61,7 +60,7 @@ const useChat = (roomId: string | null, userId: string) => {
 
       socket.emit("send_message", messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
-      localStorage.removeItem("chat_user")
+      localStorage.removeItem("chat_user");
     }
   };
 

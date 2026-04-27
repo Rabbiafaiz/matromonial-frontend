@@ -7,12 +7,21 @@ let socket: Socket | null = null;
 const getSocket = () => {
   if (!socket) {
     socket = io(BASE_URL, {
-      transports: ["websocket"],
+      // Keep websocket first, but allow polling fallback behind strict proxies.
+      transports: ["websocket", "polling"],
       withCredentials: true,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
     });
-    console.log(socket);
-    
   }
+
+  if (socket.disconnected) {
+    socket.connect();
+  }
+
   return socket;
 };
 
