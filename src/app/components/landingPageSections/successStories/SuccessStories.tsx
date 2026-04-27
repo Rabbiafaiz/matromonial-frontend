@@ -47,8 +47,8 @@ const SuccessStories = () => {
   };
   const renderStoryCard = (testimonial: any, index: number) => (
     <div key={index} className="flex justify-center w-full px-2 mb-2">
-      <div className="bg-primary custom-rounded text-left flex justify-between">
-        <div className="lg:py-20 py-8 px-4 lg:px-12 relative">
+      <div className="bg-primary custom-rounded text-left flex overflow-hidden">
+        <div className="md:w-2/3 w-full lg:py-20 py-8 px-4 lg:px-12 relative">
           <div>
             <ReviewIcon className="absolute top-14 right-20 opacity-35" />
           </div>
@@ -72,7 +72,7 @@ const SuccessStories = () => {
         <img
           src={testimonial.image}
           alt={"Testimonial Image"}
-          className="md:block hidden w-full h-full"
+          className="md:block hidden md:w-1/3 h-full object-cover"
         />
       </div>
     </div>
