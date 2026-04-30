@@ -128,8 +128,8 @@ const SuccessStoriesPage = () => {
                 successStoriesList?.map((testimonial, index) => (
                   <React.Fragment key={index}>
                     <div className="flex justify-center w-full">
-                      <div className="bg-primary custom-rounded text-left flex justify-between">
-                        <div className="lg:py-20 py-8 px-4 lg:px-12 relative">
+                      <div className="bg-primary custom-rounded text-left flex overflow-hidden">
+                        <div className="md:w-2/3 w-full lg:py-20 py-8 px-4 lg:px-12 relative">
                           <div>
                             <ReviewIcon className="absolute top-14 right-20 opacity-35" />
                           </div>
@@ -155,7 +155,7 @@ const SuccessStoriesPage = () => {
                           width={500}
                           height={500}
                           alt={"Testimonial Image"}
-                          className="md:block hidden w-full h-full"
+                          className="md:block hidden md:w-1/3 h-full object-cover"
                           objectFit="cover"
                         />
                       </div>
