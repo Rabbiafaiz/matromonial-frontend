@@ -3,7 +3,6 @@ import FeaturedProfileCard from "@/app/components/common/cards/FeaturedProfileCa
 import ProfileCard from "@/app/components/common/cards/ProfileCard";
 import { showToast } from "@/app/components/ui/CustomToast";
 import { getNewUsers, sendInterest } from "@/app/lib/api/homeRoutes";
-import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import Slider from "react-slick";
 
@@ -42,6 +41,15 @@ interface ProfileCardProps {
   handleInterestSend: (id: string) => void;
 }
 
+interface PaginationData {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+const NEW_USERS_LIMIT = 20;
+
 const NewJoined = () => {
   const [newUsers, setNewUsers] = useState<UserData[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<UserData[]>([]);
@@ -55,6 +63,13 @@ const NewJoined = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [contentVisible, setContentVisible] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationData>({
+    page: 1,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
   const sliderRef = useRef<Slider | null>(null);
   const slickSettings = {
     dots: false,
@@ -67,33 +82,33 @@ const NewJoined = () => {
     beforeChange: (current: number, next: number) => setActiveSlide(next),
   };
 
+  const updateUsersState = (users: UserData[]) => {
+    setNewUsers(users.slice(0, 10));
+    setSuggestedUsers(users.slice(5, 15));
+
+    const withRecentViews = users.filter(
+      (user: UserData) => user.recentlyViewed && user.recentlyViewed.length > 0,
+    );
+    setRecentlyViewedUsers(
+      withRecentViews.length > 0 ? withRecentViews : users.slice(2, 12),
+    );
+
+    if (users.length > 0) {
+      setFeaturedUsers(users.slice(0, 4));
+    } else {
+      setFeaturedUsers([]);
+    }
+  };
+
   const handleInterestSend = async (receiverId: string) => {
     const { status } = await sendInterest({ receiverId });
     if (status === 200) {
       showToast("Interest Sent Successfully", "success");
       try {
-        const { data } = await getNewUsers();
+        const { data } = await getNewUsers(currentPage, NEW_USERS_LIMIT);
 
         if (data?.newUsers && Array.isArray(data?.newUsers)) {
-          const validUsers = data?.newUsers.filter((user: UserData) => true);
-
-          setNewUsers(validUsers.slice(0, 10));
-
-          setSuggestedUsers(validUsers.slice(5, 15));
-
-          const withRecentViews = validUsers.filter(
-            (user: UserData) =>
-              user.recentlyViewed && user.recentlyViewed.length > 0,
-          );
-          setRecentlyViewedUsers(
-            withRecentViews.length > 0
-              ? withRecentViews
-              : validUsers.slice(2, 12),
-          );
-
-          if (validUsers.length > 0) {
-            setFeaturedUsers(validUsers.slice(0, 4));
-          }
+          updateUsersState(data.newUsers);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -102,38 +117,21 @@ const NewJoined = () => {
       showToast("Error occured while sending Interest", "error");
     }
   };
-  const getNewUsersList = async () => {
+  const getNewUsersList = async (page = 1) => {
     try {
       setLoading(true);
-      const { data } = await getNewUsers();
+      const { data } = await getNewUsers(page, NEW_USERS_LIMIT);
 
       if (data?.newUsers && Array.isArray(data?.newUsers)) {
-        // Filter users with complete profiles and images
-        const validUsers = data?.newUsers.filter((user: UserData) => true);
-        // const validUsers = data?.newUsers.filter((user: UserData) =>
-        //   user.gender === 'female' && user.userImages && user.userImages.length > 0
-        // );
-
-        // Set users for different sections
-        setNewUsers(validUsers.slice(0, 10)); // First 10 users for New Joined
-
-        // For suggested users, using a different slice of the same data
-        setSuggestedUsers(validUsers.slice(5, 15));
-
-        // For recently viewed, using users with recentlyViewed data
-        const withRecentViews = validUsers.filter(
-          (user: UserData) =>
-            user.recentlyViewed && user.recentlyViewed.length > 0,
-        );
-        setRecentlyViewedUsers(
-          withRecentViews.length > 0
-            ? withRecentViews
-            : validUsers.slice(2, 12),
-        );
-        if (validUsers.length > 0) {
-          setFeaturedUsers(validUsers.slice(0, 4));
-        }
+        updateUsersState(data.newUsers);
       }
+
+      setPagination({
+        page: data?.pagination?.page || page,
+        totalPages: data?.pagination?.totalPages || 1,
+        hasNextPage: Boolean(data?.pagination?.hasNextPage),
+        hasPreviousPage: Boolean(data?.pagination?.hasPreviousPage),
+      });
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
@@ -142,8 +140,8 @@ const NewJoined = () => {
   };
 
   useEffect(() => {
-    getNewUsersList();
-  }, []);
+    getNewUsersList(currentPage);
+  }, [currentPage]);
 
   useEffect(() => {
     if (loading) {
@@ -153,6 +151,11 @@ const NewJoined = () => {
     const timeout = setTimeout(() => setContentVisible(true), 20);
     return () => clearTimeout(timeout);
   }, [loading]);
+
+  const goToPage = (nextPage: number) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setCurrentPage(nextPage);
+  };
 
   // Helper function to format user data for ProfileCard component
   const formatUserForCard = (user: UserData): ProfileCardProps => {
@@ -331,6 +334,29 @@ const NewJoined = () => {
                   ),
                 )}
               </div>
+            </section>
+          )}
+          {pagination.totalPages > 1 && (
+            <section className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() =>
+                  pagination.hasPreviousPage && goToPage(currentPage - 1)
+                }
+                disabled={!pagination.hasPreviousPage}
+                className="px-3 py-2 border rounded-md disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => pagination.hasNextPage && goToPage(currentPage + 1)}
+                disabled={!pagination.hasNextPage}
+                className="px-3 py-2 border rounded-md disabled:opacity-50"
+              >
+                Next
+              </button>
             </section>
           )}
         </div>

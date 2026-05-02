@@ -4,7 +4,6 @@ import FeaturedProfileCard from "@/app/components/common/cards/FeaturedProfileCa
 import ProfileCard from "@/app/components/common/cards/ProfileCard";
 import { showToast } from "@/app/components/ui/CustomToast";
 import { getMatchUsers, sendInterest } from "@/app/lib/api/homeRoutes";
-import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import Slider from "react-slick";
 
@@ -38,6 +37,15 @@ interface ProfileCardProps {
   handleInterestSend: (id: string) => void;
 }
 
+interface PaginationData {
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+const NEAREST_USERS_LIMIT = 20;
+
 const NearestMe = () => {
   const [recentlyViewedUsers, setRecentlyViewedUsers] = useState<UserData[]>(
     [],
@@ -51,6 +59,13 @@ const NearestMe = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [contentVisible, setContentVisible] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationData>({
+    page: 1,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
   const sliderRef = useRef<Slider | null>(null);
   const slickSettings = {
     dots: false,
@@ -63,21 +78,31 @@ const NearestMe = () => {
     beforeChange: (current: number, next: number) => setActiveSlide(next),
   };
 
+  const updateUsersState = (users: UserData[]) => {
+    setRecentlyViewedUsers(users.slice(0, 10));
+    setSuggestedUsers(users.slice(5, 15));
+    setRecommendedUsers(users.slice(2, 12));
+
+    if (users.length > 0) {
+      setFeaturedUsers(users.slice(0, 4));
+    } else {
+      setFeaturedUsers([]);
+    }
+  };
+
   const handleInterestSend = async (receiverId: string) => {
     const { status } = await sendInterest({ receiverId });
     if (status === 200) {
       showToast("Interest Sent Successfully", "success");
       try {
-        const { data } = await getMatchUsers("newUsers");
+        const { data } = await getMatchUsers(
+          "newUsers",
+          currentPage,
+          NEAREST_USERS_LIMIT,
+        );
 
         if (data?.matchedUsers && Array.isArray(data?.matchedUsers)) {
-          const validUsers = data?.matchedUsers.filter(
-            (user: UserData) => true,
-          );
-
-          setRecentlyViewedUsers(validUsers.slice(0, 10));
-          setSuggestedUsers(validUsers.slice(5, 15));
-          setRecommendedUsers(validUsers.slice(2, 12));
+          updateUsersState(data.matchedUsers);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -87,21 +112,24 @@ const NearestMe = () => {
     }
   };
 
-  const fetchNearestUsers = async () => {
+  const fetchNearestUsers = async (page = 1) => {
     try {
       setLoading(true);
-      const { data } = await getMatchUsers("newUsers");
+      const { data } = await getMatchUsers(
+        "newUsers",
+        page,
+        NEAREST_USERS_LIMIT,
+      );
       if (data?.matchedUsers && Array.isArray(data?.matchedUsers)) {
-        const validUsers = data?.matchedUsers.filter((user: UserData) => true);
-
-        setRecentlyViewedUsers(validUsers.slice(0, 10));
-        setSuggestedUsers(validUsers.slice(5, 15));
-        setRecommendedUsers(validUsers.slice(2, 12));
-
-        if (validUsers.length > 0) {
-          setFeaturedUsers(validUsers.slice(0, 4));
-        }
+        updateUsersState(data.matchedUsers);
       }
+
+      setPagination({
+        page: data?.pagination?.page || page,
+        totalPages: data?.pagination?.totalPages || 1,
+        hasNextPage: Boolean(data?.pagination?.hasNextPage),
+        hasPreviousPage: Boolean(data?.pagination?.hasPreviousPage),
+      });
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {
@@ -110,8 +138,8 @@ const NearestMe = () => {
   };
 
   useEffect(() => {
-    fetchNearestUsers();
-  }, []);
+    fetchNearestUsers(currentPage);
+  }, [currentPage]);
 
   useEffect(() => {
     if (loading) {
@@ -121,6 +149,11 @@ const NearestMe = () => {
     const timeout = setTimeout(() => setContentVisible(true), 20);
     return () => clearTimeout(timeout);
   }, [loading]);
+
+  const goToPage = (nextPage: number) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setCurrentPage(nextPage);
+  };
 
   const formatUserForCard = (user: UserData): ProfileCardProps => {
     return {
@@ -283,6 +316,27 @@ const NearestMe = () => {
               <ProfileCard key={user._id} {...formatUserForCard(user)} />
             ))}
           </div>
+        </section>
+      )}
+      {pagination.totalPages > 1 && (
+        <section className="mt-6 flex items-center justify-end gap-3">
+          <button
+            onClick={() => pagination.hasPreviousPage && goToPage(currentPage - 1)}
+            disabled={!pagination.hasPreviousPage}
+            className="px-3 py-2 border rounded-md disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <button
+            onClick={() => pagination.hasNextPage && goToPage(currentPage + 1)}
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-2 border rounded-md disabled:opacity-50"
+          >
+            Next
+          </button>
         </section>
       )}
         </div>

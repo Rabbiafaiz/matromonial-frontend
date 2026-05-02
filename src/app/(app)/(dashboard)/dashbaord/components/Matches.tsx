@@ -99,11 +99,7 @@ const Matches = () => {
       const { data } = await getMatchUsers("match", page, MATCH_USERS_LIMIT);
 
       if (data?.matchedUsers && Array.isArray(data?.matchedUsers)) {
-        const validUsers = data?.matchedUsers.filter(
-          (user: UserData) => user.userImages && user.userImages.length > 0,
-        );
-
-        updateUsersState(validUsers);
+        updateUsersState(data.matchedUsers);
       }
 
       setPagination({
@@ -131,6 +127,11 @@ const Matches = () => {
     const timeout = setTimeout(() => setContentVisible(true), 20);
     return () => clearTimeout(timeout);
   }, [loading]);
+
+  const goToPage = (nextPage: number) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setCurrentPage(nextPage);
+  };
 
   const handleInterestSend = async (receiverId: string) => {
     const { status } = await sendInterest({ receiverId });
@@ -325,9 +326,7 @@ const Matches = () => {
       {pagination.totalPages > 1 && (
         <section className="mt-6 flex items-center justify-end gap-3">
           <button
-            onClick={() =>
-              pagination.hasPreviousPage && setCurrentPage((prev) => prev - 1)
-            }
+            onClick={() => pagination.hasPreviousPage && goToPage(currentPage - 1)}
             disabled={!pagination.hasPreviousPage}
             className="px-3 py-2 border rounded-md disabled:opacity-50"
           >
@@ -337,9 +336,7 @@ const Matches = () => {
             Page {pagination.page} of {pagination.totalPages}
           </span>
           <button
-            onClick={() =>
-              pagination.hasNextPage && setCurrentPage((prev) => prev + 1)
-            }
+            onClick={() => pagination.hasNextPage && goToPage(currentPage + 1)}
             disabled={!pagination.hasNextPage}
             className="px-3 py-2 border rounded-md disabled:opacity-50"
           >

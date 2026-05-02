@@ -1,9 +1,14 @@
 import axios from "axios";
 import axiosInstance from "../axiosInstance";
 
-export const getNewUsers = async () => {
+export const getNewUsers = async (page?: number, limit?: number) => {
   try {
-    const response = await axiosInstance.get("/user/newUsers");
+    const query = new URLSearchParams();
+    if (typeof page === "number") query.set("page", String(page));
+    if (typeof limit === "number") query.set("limit", String(limit));
+    const response = await axiosInstance.get(
+      `/user/newUsers${query.toString() ? `?${query.toString()}` : ""}`,
+    );
     return response; // Return full response
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
