@@ -139,14 +139,12 @@ const ProfilePage = () => {
         if (response.status === 200 && response?.data) {
           let updatedData: any = {};
           for (const key in response?.data) {
-            console.log(key);
             updatedData[key] = response?.data[key].map((item: any) => ({
               ...item,
+              value: item?._id || item?.value,
               label: item.value,
             }));
           }
-          console.log(updatedData);
-          
           setDropdowns(updatedData);
         }
       } catch (error) {}

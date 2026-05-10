@@ -12,6 +12,19 @@ const SelectField: React.FC<SelectFieldProps> = ({
   error,
   touched,
 }) => {
+  const normalizedCurrentValue = typeof value === "string" ? value.trim() : "";
+  const normalizedOptions = Array.isArray(options) ? options : [];
+  const matchedOption = normalizedOptions.find((option) => {
+    const optionValue = String(option?.value ?? "").trim();
+    const optionLabel = String(option?.label ?? "").trim();
+    return (
+      optionValue === normalizedCurrentValue || optionLabel === normalizedCurrentValue
+    );
+  });
+  const selectedValue = matchedOption
+    ? String(matchedOption.value ?? "").trim()
+    : normalizedCurrentValue;
+
   return (
     <div className={`flex flex-col ${className} mt-4 text-[#949494]`}>
       {label && (
@@ -24,7 +37,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
       )}
       <select
         id={name}
-        value={value}
+        value={selectedValue}
         onChange={onChange}
         className={`px-3 py-2 border border-gray rounded-xl h-12 focus:outline-none bg-white ${
           error && touched ? "border-red-500" : "border-gray"
@@ -33,7 +46,11 @@ const SelectField: React.FC<SelectFieldProps> = ({
         <option value="">
           Select an option
         </option>
-        {options && options.length > 0 && options.map((option) => (
+        {normalizedCurrentValue &&
+          !matchedOption && (
+            <option value={normalizedCurrentValue}>{normalizedCurrentValue}</option>
+          )}
+        {normalizedOptions.length > 0 && normalizedOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
